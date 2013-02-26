@@ -35,6 +35,17 @@ public interface Constants {
     public static final int CAW_QUEEN_SIDE    = 2;
     public static final int CAB_KING_SIDE     = 4;
     public static final int CAB_QUEEN_SIDE    = 8;
+    
+    public static final int NORTH   = 16;
+    public static final int NN      = NORTH+NORTH;
+    public static final int SOUTH   = -16;
+    public static final int SS      = SOUTH+SOUTH;
+    public static final int EAST    = 1;
+    public static final int WEST    = -1;
+    public static final int NE      = 17;
+    public static final int SW      = -17;
+    public static final int NW      = 15;
+    public static final int SE      = -15;    
    
     public static final String FEN_START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     
@@ -82,11 +93,25 @@ public interface Constants {
         EP(2),
         CASTLE(4),
         PROMOTION(8);
+        
         public final int type;
 
         MoveTypes(int type) {
             this.type = type;
         }
     }
+    
+    boolean[] slide = { false, true, true, true, false };
+    int[] vectors = { 8, 8, 4, 4, 8 };
+    int[][] vector ={
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
+        { SOUTH, WEST, EAST, NORTH                  },
+        { SW, SE, NW, NE                            },
+        { -33, -31, -18, -14, 14, 18, 31, 33        }
+    };
+
+    
+    
         
 }

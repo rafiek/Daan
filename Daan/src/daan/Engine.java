@@ -5,6 +5,8 @@
 
 package daan;
 
+import java.util.List;
+
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
@@ -16,7 +18,8 @@ public class Engine {
     
     public Engine(){
         this.board = new Board();
-        board.generateMoves();
+        List<Move> moves = board.generateMoves();
+        System.out.println(moves);
         this.board = new Board("8/p4p1p/1r2k1pP/6P1/1P1R1P2/8/2r2PK1/7R b - -");
         //board.generateMoves();
     }

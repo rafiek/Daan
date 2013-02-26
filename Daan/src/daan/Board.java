@@ -4,6 +4,9 @@
  */
 package daan;
 
+import static daan.Constants.NN;
+import static daan.Constants.NORTH;
+import static daan.Constants.W_PAWN;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +42,8 @@ public class Board implements Constants {
     private int fullMoveNumber;
     
     private List<Move> history;
+    
+    private List<Move> moves;
 
     public Board() {
         initPosition(FEN_START_POSITION);
@@ -220,7 +225,7 @@ public class Board implements Constants {
         return fen.toString();
     }
     
-    private <T, E> T getKeyByValue(Map<T, E> map, E value) {
+    public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
         for (Entry<T, E> entry : map.entrySet()) {
             if (value.equals(entry.getValue())) {
                 return entry.getKey();
@@ -230,40 +235,66 @@ public class Board implements Constants {
     }
 
     public List generateMoves(){
-        List<Move> moves = new ArrayList<>();
+        
+        moves = new ArrayList<>();
         
         for( Map.Entry<Integer,Integer> entry : locationOfPieces.entrySet() ){
+            
             switch(Math.abs(entry.getValue())){//temporarily absolute value just to check type of piece  
-                case W_PAWN     : generatePawnMoves(entry.getKey(), moves);
+                
+                case W_PAWN     : generatePawnMoves( entry.getKey() );
                     break;
-                case W_KNIGHT   : System.out.println(entry);
+                case W_KNIGHT   : //System.out.println(entry);
                     break;
-                case W_BISHOP   : System.out.println(entry);
+                case W_BISHOP   : //System.out.println(entry);
                     break;    
-                case W_KING     : System.out.println(entry);
+                case W_KING     : //System.out.println(entry);
                     break;
-                case W_QUEEN    : System.out.println(entry);
+                case W_QUEEN    : //System.out.println(entry);
                     break;
-                case W_ROOK     : System.out.println(entry);
+                case W_ROOK     : //System.out.println(entry);
                     break;
+                    
             }
+            
         }
         
         return moves;
     }
     
-    private void generatePawnMoves(int location, List<Move> moves) {
+    private void generatePawnMoves(int field) {
+        
         if(sideToMove == WHITE_TO_MOVE){
-            if( position[ location ] > 0 ){
-                System.out.println( position[ location ] );                
+            
+            if( position[ field ] > 0 ){//Look at white pawns only
+                
+                //pawn moves N one
+                if( position[ field + NORTH ] == 0 ){
+                    
+                    moves.add( 
+                            new Move( W_PAWN, field, field + NORTH, W_PAWN, MoveTypes.NORMAL, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                    //pawn moves N two if 2nd rank 
+                    if( position[ field + NN ] == 0 && getRow( field ) == 1 ){
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NN, W_PAWN, MoveTypes.NORMAL, castlingAvailability, halfMoveClock, enPassant )
+                                );
+                                                
+                    }
+                    
+                } 
+                                
+                //pawn takes NW or NE one 
+                
+                //if enpassant is available, then pawn can also take pawn by moving to enpassant field
+                
+                //pawn promotes to queen/rook/bishop/knight if eigth rank reached
             }
-            //pawn moves N two if 2nd rank 
-            //pawn moves N one  
-            //pawn takes NW or NE one 
-            //if enpassant is available, then pawn can also take pawn by moving to enpassant field
-            //pawn promotes to queen/rook/bishop/knight if eigth rank reached
+            
         }else if(sideToMove == BLACK_TO_MOVE){
-            System.out.println( position[ location ] );
+            //System.out.println( position[ field ] );
             //pawn moves S two if 7th rank 
             //pawn moves S one  
             //pawn takes SW or SE one 
@@ -272,5 +303,9 @@ public class Board implements Constants {
         }
         
         
+    }
+    
+    private int getRow( int field ){
+        return ( field - ( field % 16 ) ) / 16;
     }
 }
