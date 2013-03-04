@@ -17,6 +17,8 @@ public interface Constants {
     public static final int WHITE_TO_MOVE   = 1;
     public static final int BLACK_TO_MOVE   = -1;
     
+    public static final int EMPTY_FIELD = 0;
+    
     public static final int W_KING      = 1;
     public static final int W_QUEEN     = 2;
     public static final int W_ROOK      = 3;
@@ -86,20 +88,11 @@ public interface Constants {
 
                     });
     
-    public static enum MoveTypes {
-
-        NORMAL(0),
-        CAPTURE(1),
-        EP(2),
-        CASTLE(4),
-        PROMOTION(8);
-        
-        public final int type;
-
-        MoveTypes(int type) {
-            this.type = type;
-        }
-    }
+    public static final int MOVE_TYPE_NORMAL = 0;
+    public static final int MOVE_TYPE_CAPTURE = 1;
+    public static final int MOVE_TYPE_EP = 2;
+    public static final int MOVE_TYPE_CASTLE = 4;
+    public static final int MOVE_TYPE_PROMOTION = 8;
     
     boolean[] slide = { false, true, true, true, false };
     int[] vectors = { 8, 8, 4, 4, 8 };

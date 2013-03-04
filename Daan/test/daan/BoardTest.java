@@ -37,8 +37,9 @@ public class BoardTest {
     }
 
     @Test
-    public void testBoardDefaultConstructor() {
+    public void testPromotion() {
+        Board b = new Board("8/1P6/8/8/8/8/8/8 w - - 0 1");
         // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println(b.generateMoves());
     }
 }

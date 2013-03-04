@@ -4,9 +4,27 @@
  */
 package daan;
 
+import static daan.Constants.B_BISHOP;
+import static daan.Constants.B_KNIGHT;
+import static daan.Constants.B_PAWN;
+import static daan.Constants.B_QUEEN;
+import static daan.Constants.B_ROOK;
+import static daan.Constants.MOVE_TYPE_CAPTURE;
+import static daan.Constants.MOVE_TYPE_NORMAL;
+import static daan.Constants.MOVE_TYPE_PROMOTION;
+import static daan.Constants.NE;
 import static daan.Constants.NN;
 import static daan.Constants.NORTH;
+import static daan.Constants.NW;
+import static daan.Constants.SE;
+import static daan.Constants.SOUTH;
+import static daan.Constants.SS;
+import static daan.Constants.SW;
+import static daan.Constants.W_BISHOP;
+import static daan.Constants.W_KNIGHT;
 import static daan.Constants.W_PAWN;
+import static daan.Constants.W_QUEEN;
+import static daan.Constants.W_ROOK;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -244,7 +262,7 @@ public class Board implements Constants {
                 
                 case W_PAWN     : generatePawnMoves( entry.getKey() );
                     break;
-                case W_KNIGHT   : //System.out.println(entry);
+                case W_KNIGHT   : generateKnightMoves( entry.getKey() );
                     break;
                 case W_BISHOP   : //System.out.println(entry);
                     break;    
@@ -269,43 +287,284 @@ public class Board implements Constants {
             if( position[ field ] > 0 ){//Look at white pawns only
                 
                 //pawn moves N one
-                if( position[ field + NORTH ] == 0 ){
+                if( fieldIsEmpty( field + NORTH ) ){
                     
-                    moves.add( 
-                            new Move( W_PAWN, field, field + NORTH, W_PAWN, MoveTypes.NORMAL, castlingAvailability, halfMoveClock, enPassant )
-                            );
-                    
-                    //pawn moves N two if 2nd rank 
-                    if( position[ field + NN ] == 0 && getRow( field ) == 1 ){
+                    if( getRank( field ) == 6 ){ //pawn promotes to queen/rook/bishop/knight if eigth rank reached     
                         
                         moves.add( 
-                            new Move( W_PAWN, field, field + NN, W_PAWN, MoveTypes.NORMAL, castlingAvailability, halfMoveClock, enPassant )
-                                );
-                                                
+                            new Move( W_PAWN, field, field + NORTH, W_QUEEN, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NORTH, W_ROOK, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NORTH, W_BISHOP, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NORTH, W_KNIGHT, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                    } else {
+
+                        moves.add(
+                                new Move(W_PAWN, field, field + NORTH, W_PAWN, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant));
+
+                    }
+
+                    if (getRank(field) == 1) { //pawn moves N two if 2nd rank 
+                        
+                        if (fieldIsEmpty(field + NN)) {
+                            
+                            moves.add(
+                                    new Move(W_PAWN, field, field + NN, W_PAWN, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant));
+                        
+                        }
+
+                    }
+                    
+                }
+                                
+                //pawn takes NW or NE one                
+                if ( isBlackPiece( position[ field + NW ] ) ) {
+                    
+                    if( getRank( field ) == 6 ){
+                        
+                         moves.add( 
+                            new Move( W_PAWN, field, field + NW, W_QUEEN, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NW, W_ROOK, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NW, W_BISHOP, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NW, W_KNIGHT, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                    }else{
+                        
+                        moves.add(
+                            new Move( W_PAWN, field, field + NW, W_PAWN, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                    }
+
+                }
+                
+                if ( isBlackPiece( position[ field + NE ] ) ) {
+                    
+                    if( getRank( field ) == 6 ){
+                        
+                         moves.add( 
+                            new Move( W_PAWN, field, field + NE, W_QUEEN, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NE, W_ROOK, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NE, W_BISHOP, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( W_PAWN, field, field + NE, W_KNIGHT, (MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                    }else{
+                        
+                        moves.add(
+                            new Move( W_PAWN, field, field + NE, W_PAWN, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                    }
+
+                }
+                
+                //if enpassant is available, then pawn can also take pawn by moving to enpassant field
+                if( field + NW == enPassant ){
+                    
+                    moves.add(
+                            new Move( W_PAWN, field, field + NW, W_PAWN, MOVE_TYPE_EP, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                }
+                
+                 if( field + NE == enPassant ){
+                    
+                    moves.add(
+                            new Move( W_PAWN, field, field + NE, W_PAWN, MOVE_TYPE_EP, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                }
+                 
+            }
+            
+        }else if(sideToMove == BLACK_TO_MOVE){
+            
+            if( position[ field ] < 0 ){//Look at black pawns only
+                
+                //pawn moves S one
+                if( fieldIsEmpty( field + SOUTH ) ){
+                    
+                    if( getRank( field ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached     
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SOUTH, B_QUEEN, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SOUTH, B_ROOK, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SOUTH, B_BISHOP, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SOUTH, B_KNIGHT, MOVE_TYPE_PROMOTION, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                    }else{
+                        
+                         moves.add( 
+                            new Move( B_PAWN, field, field + SOUTH, B_PAWN, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                         
+                    }
+                    
+                    if ( getRank( field ) == 6 ) { //pawn moves S two if 7th rank 
+
+                        if ( fieldIsEmpty( field + SS ) ) {
+
+                            moves.add(
+                                    new Move( B_PAWN, field, field + SS, B_PAWN, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+
+                        }
+
                     }
                     
                 } 
                                 
-                //pawn takes NW or NE one 
+                //pawn takes SW or SE one                
+                if ( isWhitePiece( position[ field + SW ] ) ) {
+
+                    if( getRank( field ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached     
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SW, B_QUEEN, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SW, B_ROOK, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SW, B_BISHOP, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SW, B_KNIGHT, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                    }else{
+                        
+                         moves.add( 
+                            new Move( B_PAWN, field, field + SW, B_PAWN, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                         
+                    }
+
+                }
                 
-                //if enpassant is available, then pawn can also take pawn by moving to enpassant field
+                if ( isWhitePiece( position[ field + SE ] ) ) {
+                    
+                    if( getRank( field ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached     
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SE, B_QUEEN, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SE, B_ROOK, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SE, B_BISHOP, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                        
+                        moves.add( 
+                            new Move( B_PAWN, field, field + SE, B_KNIGHT, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                    }else{
+                        
+                         moves.add( 
+                            new Move( B_PAWN, field, field + SE, B_PAWN, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                         
+                    }
+                    
+                }
                 
-                //pawn promotes to queen/rook/bishop/knight if eigth rank reached
+                //if enpassant is available, then pawn can also take neighbour pawn by moving to enpassant field behind neighbour pawn
+                if( field + SW == enPassant ){
+                    
+                    moves.add(
+                            new Move( B_PAWN, field, field + SW, B_PAWN, MOVE_TYPE_EP, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                }
+                
+                 if( field + SE == enPassant ){
+                    
+                    moves.add(
+                            new Move( B_PAWN, field, field + SE, B_PAWN, MOVE_TYPE_EP, castlingAvailability, halfMoveClock, enPassant )
+                            );
+                    
+                }
+                 
             }
-            
-        }else if(sideToMove == BLACK_TO_MOVE){
-            //System.out.println( position[ field ] );
-            //pawn moves S two if 7th rank 
-            //pawn moves S one  
-            //pawn takes SW or SE one 
-            //if enpassant is available, then pawn can also take pawn by moving to enpassant field
-            //pawn promotes to queen/rook/bishop/knight if 1st rank reached
         }
         
         
     }
     
-    private int getRow( int field ){
-        return ( field - ( field % 16 ) ) / 16;
+    private void generateKnightMoves( int field ) {
+        
+        
+        
     }
+    
+    private int getRank( int field ){
+        return ( field >> 4 );
+    }
+    
+    private int getFile( int field ){
+        return ( field & 7 );
+    }
+    
+    private boolean fieldIsEmpty( int field ){
+        return position[ field ] == EMPTY_FIELD;
+    }
+    
+    private boolean isWhitePiece( int piece ){
+        return piece > 0;
+    }
+    
+    private boolean isBlackPiece( int piece ){
+        return piece < 0;
+    }
+    
+    private boolean offTheBoard( int field ){
+        return ( ( field & 0x88 ) != 0 );
+    }
+    
 }
