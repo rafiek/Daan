@@ -88,21 +88,29 @@ public interface Constants {
 
                     });
     
-    public static final int MOVE_TYPE_NORMAL = 0;
-    public static final int MOVE_TYPE_CAPTURE = 1;
-    public static final int MOVE_TYPE_EP = 2;
-    public static final int MOVE_TYPE_CASTLE = 4;
+    public static final int MOVE_TYPE_NORMAL    = 0;
+    public static final int MOVE_TYPE_CAPTURE   = 1;
+    public static final int MOVE_TYPE_EP        = 2;
+    public static final int MOVE_TYPE_CASTLE    = 4;
     public static final int MOVE_TYPE_PROMOTION = 8;
     
-    boolean[] slide = { false, true, true, true, false };
-    int[] vectors = { 8, 8, 4, 4, 8 };
-    int[][] vector ={
+    public static final int INDEX_KING_DIRECTION    = 0;
+    public static final int INDEX_QUEEN_DIRECTION   = 1;
+    public static final int INDEX_ROOK_DIRECTION    = 2;
+    public static final int INDEX_BISHOP_DIRECTION  = 3;
+    public static final int INDEX_KNIGHT_DIRECTION  = 4;    
+    
+    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N    
+    
+    public final static int[][] PIECE_VECTORS ={//K, Q, R, B, N
         { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
         { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
         { SOUTH, WEST, EAST, NORTH                  },
         { SW, SE, NW, NE                            },
         { -33, -31, -18, -14, 14, 18, 31, 33        }
     };
+    
+    
 
     
     

@@ -5,22 +5,32 @@
 package daan;
 
 import static daan.Constants.B_BISHOP;
+import static daan.Constants.B_KING;
 import static daan.Constants.B_KNIGHT;
 import static daan.Constants.B_PAWN;
 import static daan.Constants.B_QUEEN;
 import static daan.Constants.B_ROOK;
+import static daan.Constants.CAW_KING_SIDE;
+import static daan.Constants.EMPTY_FIELD;
+import static daan.Constants.INDEX_BISHOP_DIRECTION;
+import static daan.Constants.INDEX_KING_DIRECTION;
+import static daan.Constants.INDEX_QUEEN_DIRECTION;
 import static daan.Constants.MOVE_TYPE_CAPTURE;
+import static daan.Constants.MOVE_TYPE_CASTLE;
 import static daan.Constants.MOVE_TYPE_NORMAL;
 import static daan.Constants.MOVE_TYPE_PROMOTION;
 import static daan.Constants.NE;
 import static daan.Constants.NN;
 import static daan.Constants.NORTH;
 import static daan.Constants.NW;
+import static daan.Constants.PIECE_VECTORS;
 import static daan.Constants.SE;
 import static daan.Constants.SOUTH;
 import static daan.Constants.SS;
 import static daan.Constants.SW;
+import static daan.Constants.WHITE_TO_MOVE;
 import static daan.Constants.W_BISHOP;
+import static daan.Constants.W_KING;
 import static daan.Constants.W_KNIGHT;
 import static daan.Constants.W_PAWN;
 import static daan.Constants.W_QUEEN;
@@ -30,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  *
@@ -41,8 +52,11 @@ public class Board implements Constants {
     //current position in 0x88 format, 0x00=A1, 0x07=H1
     private int[] position;
     
-    //keeps a list of the location of the pieces
-    private HashMap<Integer, Integer> locationOfPieces;
+    //keeps a list of the location of the white pieces
+    private HashMap<Integer, Integer> locationOfWhitePieces;
+    
+    //keeps a list of the location of the black pieces
+    private HashMap<Integer, Integer> locationOfBlackPieces;
     
     //whose turn is it to move
     private int sideToMove;
@@ -73,7 +87,8 @@ public class Board implements Constants {
     
     private void initPosition(String fen) {
         position = new int[128];
-        locationOfPieces = new HashMap<>();
+        locationOfWhitePieces = new HashMap<>();
+        locationOfBlackPieces = new HashMap<>();                
         history = new ArrayList<>();
         sideToMove = WHITE_TO_MOVE;
         castlingAvailability = 0;
@@ -94,7 +109,11 @@ public class Board implements Constants {
                         if (Character.isLetter(positionInFEN.charAt(j))) {//piece
 
                                 position[currentPositionIndex] = PIECE_CHARACTER_MAPPINGS.get(positionInFEN.charAt(j));
-                                locationOfPieces.put(currentPositionIndex, position[currentPositionIndex]);
+                                if(Character.isUpperCase( positionInFEN.charAt(j))){
+                                    locationOfWhitePieces.put(currentPositionIndex, position[currentPositionIndex]);
+                                }else{
+                                    locationOfBlackPieces.put(currentPositionIndex, position[currentPositionIndex]);
+                                }
                                 currentPositionIndex++;
                                 
                         } else if (Character.isDigit(positionInFEN.charAt(j))) {//number of empty fields
@@ -252,39 +271,47 @@ public class Board implements Constants {
         return null;
     }
 
-    public List generateMoves(){
-        
+    public List generateMoves() {
+
         moves = new ArrayList<>();
-        
-        for( Map.Entry<Integer,Integer> entry : locationOfPieces.entrySet() ){
-            
-            switch(Math.abs(entry.getValue())){//temporarily absolute value just to check type of piece  
-                
-                case W_PAWN     : generatePawnMoves( entry.getKey() );
+
+        Set<Map.Entry<Integer, Integer>> locationOfPieces = ( sideToMove == WHITE_TO_MOVE ) ? locationOfWhitePieces.entrySet() : locationOfBlackPieces.entrySet();
+
+        for ( Map.Entry<Integer, Integer> entry : locationOfPieces ) {
+
+            switch ( Math.abs( entry.getValue() ) ) {//temporarily absolute value just to check type of piece  
+
+                case W_PAWN:
+                    generatePseudoPawnMoves( entry.getKey() );
                     break;
-                case W_KNIGHT   : generateKnightMoves( entry.getKey() );
+                case W_KNIGHT:
+                    generatePseudoKnightMoves( entry.getKey() );
                     break;
-                case W_BISHOP   : //System.out.println(entry);
-                    break;    
-                case W_KING     : //System.out.println(entry);
+                case W_BISHOP: 
+                    generatePseudoBishopMoves( entry.getKey() );
                     break;
-                case W_QUEEN    : //System.out.println(entry);
+                case W_KING:
+                    generatePseudoKingMoves( entry.getKey() );
                     break;
-                case W_ROOK     : //System.out.println(entry);
+                case W_QUEEN: 
+                    generatePseudoQueenMoves( entry.getKey() );
                     break;
-                    
+                case W_ROOK: 
+                    generatePseudoRookMoves( entry.getKey() );
+                    break;
+
             }
-            
+
         }
-        
+
         return moves;
+
     }
     
-    private void generatePawnMoves(int field) {
+    private void generatePseudoPawnMoves(int field) {
         
         if(sideToMove == WHITE_TO_MOVE){
             
-            if( position[ field ] > 0 ){//Look at white pawns only
                 
                 //pawn moves N one
                 if( fieldIsEmpty( field + NORTH ) ){
@@ -405,12 +432,9 @@ public class Board implements Constants {
                     
                 }
                  
-            }
             
         }else if(sideToMove == BLACK_TO_MOVE){
-            
-            if( position[ field ] < 0 ){//Look at black pawns only
-                
+                            
                 //pawn moves S one
                 if( fieldIsEmpty( field + SOUTH ) ){
                     
@@ -532,15 +556,223 @@ public class Board implements Constants {
                 }
                  
             }
-        }
         
         
     }
     
-    private void generateKnightMoves( int field ) {
+    private void generatePseudoKnightMoves( int field ) {
+
+        int knightMove;
+        int piece = isWhitePiece( position[ field ] ) ? W_KNIGHT : B_KNIGHT;
+
+        for ( int direction = 0; direction < 8; direction++ ) {
+
+            knightMove = field + PIECE_VECTORS[ INDEX_KNIGHT_DIRECTION ][ direction ];
+
+            if ( !offTheBoard( knightMove ) ) {
+
+                if ( position[ knightMove ] == EMPTY_FIELD ) {
+
+                    moves.add(
+                            new Move( piece, field, knightMove, piece, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+
+                } else if ( position[ field ] * position[ knightMove ] < 0 ) {
+
+                    moves.add(
+                            new Move( piece, field, knightMove, piece, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant ) );
+
+                }
+
+            }
+
+        }
+
+    }
+    
+    private void generatePseudoKingMoves( int field ) {
+        /*
+         * castling is impossible if
+         * - king in check
+         * - king will be in check
+         * - king moves across attacked square 
+         */
+        int kingMove;
+        int piece = isWhitePiece( position[ field ] ) ? W_KING : B_KING ;
         
+        for( int direction = 0; direction < 8; direction++ ){
+            
+            kingMove = field + PIECE_VECTORS[ INDEX_KING_DIRECTION ][ direction ];
+            
+            if( !offTheBoard( kingMove ) ) {
+                
+                 if( position[ kingMove ] == EMPTY_FIELD ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, kingMove, piece, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+                     
+                 } else if ( position[ field ] * position[ kingMove ] < 0 ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, kingMove, piece, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant ) );
+                     
+                 }
+            }
+            
+        }
         
+        if ( ( castlingAvailability & CAW_KING_SIDE ) == CAW_KING_SIDE ) {
+            
+            if( position[ field + 1 ] == EMPTY_FIELD && position[ field + 2 ] == EMPTY_FIELD ){
+                
+                moves.add(
+                        new Move( piece, field, field + 2, piece, MOVE_TYPE_CASTLE, castlingAvailability, halfMoveClock, enPassant ) );                        
+                
+            }
+            
+        } 
         
+        if ( ( castlingAvailability & CAW_QUEEN_SIDE ) == CAW_QUEEN_SIDE ) {
+            
+            if( position[ field - 1 ] == EMPTY_FIELD && position[ field - 2 ] == EMPTY_FIELD && position[ field - 3 ] == EMPTY_FIELD ){
+                
+                moves.add(
+                        new Move( piece, field, field - 2, piece, MOVE_TYPE_CASTLE, castlingAvailability, halfMoveClock, enPassant ) );                        
+                
+            }            
+            
+        } 
+        
+        if ( ( castlingAvailability & CAB_KING_SIDE ) == CAB_KING_SIDE ) {
+            
+            if( position[ field + 1 ] == EMPTY_FIELD && position[ field + 2 ] == EMPTY_FIELD ){
+                
+                moves.add(
+                        new Move( piece, field, field + 2, piece, MOVE_TYPE_CASTLE, castlingAvailability, halfMoveClock, enPassant ) );                        
+                
+            }
+            
+        } 
+        
+        if ( ( castlingAvailability & CAB_QUEEN_SIDE ) == CAB_QUEEN_SIDE ) {
+            
+            if( position[ field - 1 ] == EMPTY_FIELD && position[ field - 2 ] == EMPTY_FIELD && position[ field - 3 ] == EMPTY_FIELD ){
+                
+                moves.add(
+                        new Move( piece, field, field - 2, piece, MOVE_TYPE_CASTLE, castlingAvailability, halfMoveClock, enPassant ) );                        
+                
+            }  
+            
+        }
+        
+    }
+    
+    private void generatePseudoBishopMoves( int field ){
+        int bishopMove;
+        int piece = isWhitePiece( position[ field ] ) ? W_BISHOP : B_BISHOP ;
+        
+        for( int direction = 0; direction < PIECE_VECTORS[ INDEX_BISHOP_DIRECTION ].length; direction++ ){
+            
+            int step = 1;
+            bishopMove = field + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION ][ direction ] * step;
+            
+            while( !offTheBoard( bishopMove ) ) {
+                
+                 if( position[ bishopMove ] == EMPTY_FIELD ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, bishopMove, piece, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+                     step++;                     
+                     
+                 } else if ( position[ field ] * position[ bishopMove ] < 0 ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, bishopMove, piece, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant ) );
+                     break;
+                     
+                 } else {
+                     
+                     break;
+                     
+                 }
+                 
+                 bishopMove = field + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION ][ direction ] * step;
+                 
+            }
+            
+        }
+        
+    }
+    
+    private void generatePseudoQueenMoves( int field ){
+        int queenMove;
+        int piece = isWhitePiece( position[ field ] ) ? W_QUEEN : B_QUEEN ;
+        
+        for( int direction = 0; direction < PIECE_VECTORS[ INDEX_QUEEN_DIRECTION ].length; direction++ ){
+            
+            int step = 1;
+            queenMove = field + PIECE_VECTORS[ INDEX_QUEEN_DIRECTION ][ direction ] * step;
+            
+            while( !offTheBoard( queenMove ) ) {
+                
+                 if( position[ queenMove ] == EMPTY_FIELD ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, queenMove, piece, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+                     step++;                     
+                     
+                 } else if ( position[ field ] * position[ queenMove ] < 0 ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, queenMove, piece, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant ) );
+                     break;
+                     
+                 } else {
+                     
+                     break;
+                     
+                 }
+                 
+                 queenMove = field + PIECE_VECTORS[ INDEX_QUEEN_DIRECTION ][ direction ] * step;
+                 
+            }
+            
+        }
+    }
+    
+    private void generatePseudoRookMoves( int field ){
+        int rookMove;
+        int piece = isWhitePiece( position[ field ] ) ? W_ROOK : B_ROOK ;
+        
+        for( int direction = 0; direction < PIECE_VECTORS[ INDEX_ROOK_DIRECTION ].length; direction++ ){
+            
+            int step = 1;
+            rookMove = field + PIECE_VECTORS[ INDEX_ROOK_DIRECTION ][ direction ] * step;
+            
+            while( !offTheBoard( rookMove ) ) {
+                
+                 if( position[ rookMove ] == EMPTY_FIELD ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, rookMove, piece, MOVE_TYPE_NORMAL, castlingAvailability, halfMoveClock, enPassant ) );
+                     step++;                     
+                     
+                 } else if ( position[ field ] * position[ rookMove ] < 0 ) {
+                     
+                     moves.add( 
+                             new Move( piece, field, rookMove, piece, MOVE_TYPE_CAPTURE, castlingAvailability, halfMoveClock, enPassant ) );
+                     break;
+                     
+                 } else {
+                     
+                     break;
+                     
+                 }
+                 
+                 rookMove = field + PIECE_VECTORS[ INDEX_ROOK_DIRECTION ][ direction ] * step;
+                 
+            }
+            
+        }
     }
     
     private int getRank( int field ){
