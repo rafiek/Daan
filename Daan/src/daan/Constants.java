@@ -17,7 +17,7 @@ public interface Constants {
     public static final int WHITE_TO_MOVE   = 1;
     public static final int BLACK_TO_MOVE   = -1;
     
-    public static final int EMPTY_FIELD = 0;
+    public static final int EMPTY_SQUARE = 0;
     
     public static final int W_KING      = 1;
     public static final int W_QUEEN     = 2;
@@ -71,7 +71,7 @@ public interface Constants {
 
                     });
     
-    public static final Map<String, Integer> FIELD_INDEX_MAPPINGS = 
+    public static final Map<String, Integer> SQUARE_INDEX_MAPPINGS = 
             Collections.unmodifiableMap(
                     new HashMap<String, Integer>() {
                         {

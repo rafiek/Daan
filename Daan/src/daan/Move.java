@@ -5,7 +5,7 @@
 
 package daan;
 
-import static daan.Constants.FIELD_INDEX_MAPPINGS;
+import static daan.Constants.SQUARE_INDEX_MAPPINGS;
 
 /**
  *
@@ -18,28 +18,30 @@ public class Move implements Constants{
     public int from;
     public int to;
     public int pieceTo;
+    public int capture;
     public int type; //OR-ing of MoveTypes    
     public int castleAvailability;
     public int halfMoveClock;
     public int enPassant;
 
-    public Move(int pieceFrom, int from, int to, int pieceTo, int type, int castleAvailability, int halfMoveClock, int enPassant) {
-        this.pieceFrom = pieceFrom;
-        this.from = from;
-        this.to = to;
-        this.pieceTo = pieceTo;
-        this.type = type;
+    public Move(int pieceFrom, int from, int to, int pieceTo, int capture, int type, int castleAvailability, int halfMoveClock, int enPassant) {
+        this.pieceFrom          = pieceFrom;
+        this.from               = from;
+        this.to                 = to;
+        this.pieceTo            = pieceTo;
+        this.capture            = capture;
+        this.type               = type;
         this.castleAvailability = castleAvailability;
-        this.halfMoveClock = halfMoveClock;
-        this.enPassant = enPassant;
+        this.halfMoveClock      = halfMoveClock;
+        this.enPassant          = enPassant;
     }
     
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
         
-        sb.append( Board.getKeyByValue( FIELD_INDEX_MAPPINGS, from ) ); 
-        sb.append( Board.getKeyByValue( FIELD_INDEX_MAPPINGS, to ) );
+        sb.append( Board.getKeyByValue( SQUARE_INDEX_MAPPINGS, from ) ); 
+        sb.append( Board.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
         
         if ( ( this.type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ) {
 
