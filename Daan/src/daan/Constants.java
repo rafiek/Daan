@@ -14,10 +14,17 @@ import java.util.Map;
  */
 public interface Constants {
     
-    public static final int WHITE_TO_MOVE   = 1;
-    public static final int BLACK_TO_MOVE   = -1;
+    public static final int WHITE   = 1;
+    public static final int BLACK   = -1;
     
     public static final int EMPTY_SQUARE = 0;
+    
+    public static final int VALUE_KING      = 100;
+    public static final int VALUE_QUEEN     = 9;
+    public static final int VALUE_ROOK      = 5;
+    public static final double VALUE_BISHOP = 3.1;
+    public static final int VALUE_KNIGHT    = 3;
+    public static final int VALUE_PAWN      = 1;
     
     public static final int W_KING      = 1;
     public static final int W_QUEEN     = 2;
@@ -100,9 +107,9 @@ public interface Constants {
     public static final int INDEX_BISHOP_DIRECTION  = 3;
     public static final int INDEX_KNIGHT_DIRECTION  = 4;    
     
-    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N    
+    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N  
     
-    public final static int[][] PIECE_VECTORS ={//K, Q, R, B, N
+        public final static int[][] PIECE_VECTORS ={//K, Q, R, B, N
         { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
         { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
         { SOUTH, WEST, EAST, NORTH                  },

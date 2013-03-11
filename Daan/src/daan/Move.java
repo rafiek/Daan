@@ -19,12 +19,12 @@ public class Move implements Constants{
     public int to;
     public int pieceTo;
     public int capture;
-    public int type; //OR-ing of MoveTypes    
+    public int type; 
     public int castleAvailability;
     public int halfMoveClock;
     public int enPassant;
 
-    public Move(int pieceFrom, int from, int to, int pieceTo, int capture, int type, int castleAvailability, int halfMoveClock, int enPassant) {
+    public Move(int pieceFrom, int from, int to, int pieceTo, int type, int capture, int castleAvailability, int halfMoveClock, int enPassant) {
         this.pieceFrom          = pieceFrom;
         this.from               = from;
         this.to                 = to;

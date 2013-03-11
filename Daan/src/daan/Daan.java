@@ -21,7 +21,9 @@ public class Daan {
      */
     public static void main(String[] args)
     {
-        Engine engine = new Engine();
+        Engine engine = new Engine("5rk1/p3qppp/8/3R4/8/1P4P1/PQ5P/7K b - - 0 1");
+        System.out.println( engine.board );
+        engine.search(5);
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String command = "";
@@ -48,7 +50,7 @@ public class Daan {
             }          
             
             if(command.equals("isready")){
-                //check if engine is ready
+                
                 System.out.println("\t readyok");
             }
             

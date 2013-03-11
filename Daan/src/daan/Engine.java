@@ -5,30 +5,184 @@
 
 package daan;
 
+import static daan.Constants.B_KING;
+import static daan.Constants.W_KING;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  * created 14-feb-2013, 10:22:45
  */
-public class Engine {
+public class Engine implements Constants{
     
     Board board;
+    int kingLocation;    
     
     public Engine(){
-        System.out.println(new Board().generateMoves());
-        System.out.println(new Board("8/p4p1p/1r2k1pP/6P1/1P1R1P2/8/2r2PK1/7R w - -").generateMoves());
-        System.out.println(new Board("8/1P6/8/8/8/8/8/8 w - - 0 1").generateMoves());
-        System.out.println( new Board("8/1n1q4/2P5/8/8/8/8/8 w - - 0 1").generateMoves() );
-        System.out.println( new Board("1n1b4/PPP4p/8/P2QnPpP/4PPpn/2r1r1Pp/P2P3P/8 w - g6 0 1").generateMoves() );
-        System.out.println( new Board("8/8/2N2n2/3Nn3/3Nn3/2N2n2/8/8 w - - 0 1").generateMoves() );
-        System.out.println( new Board("8/8/8/8/8/8/8/RN2K2R w KQ - 0 1").generateMoves() );
-        System.out.println( new Board("8/8/8/4b3/3BB3/8/8/8 w - - 0 1").generateMoves() );
-        System.out.println( new Board("8/8/5n2/4K3/3Q4/8/1R1P1q2/8 w - - 0 1").generateMoves() );
-        System.out.println( new Board("8/8/4k3/3R4/1Q1RK3/8/3r4/8 w - - 0 1").generateMoves() );
+        
+        init( FEN_START_POSITION );
+        
+    }
+    
+    public Engine( String fen ){
+        
+        init( fen );
+        
+    }
+    
+    private void init( String fen ){
+        
+        this.board = new Board(fen);
+        
     }
     
     public Board getBoard(){
         return this.board;
+    }
+    
+    /*
+     * root negaMax
+     */
+    public List<Move> search(int depth){
+        ArrayList<Move> principalVariation = new ArrayList<>(depth);
+        double eval = negaMax( depth, principalVariation);
+        System.out.println( "PV: " + eval + " " + principalVariation );
+        
+        return principalVariation;
+        
+    }
+    
+    
+    
+    double negaMax( int depth, ArrayList<Move> parentPV ){
+        
+        if( depth == 0 ){
+            
+            return board.evaluate();
+            
+        }
+        
+        double max = Double.NEGATIVE_INFINITY;
+        double score = 0;
+        
+        ArrayList<Move> childPV = new ArrayList<>();
+        List<Move> moves = board.generateMoves();        
+        int numberOfMoves = moves.size();
+                
+        for( int i = 0; i < numberOfMoves; i++ ){
+            
+            board.makeMove( moves.get( i ) );
+            
+            if( depth == 5 ){
+                
+                System.out.println( moves.get( i ) + " " );
+                
+            }
+            
+            if( board.sideToMove < 0 ){
+                kingLocation = Board.getKeyByValue( board.locationOfWhitePieces, W_KING );            
+            }else{
+                kingLocation = Board.getKeyByValue( board.locationOfBlackPieces, B_KING );   
+            }
+            
+            if ( !board.isAttacked( board.sideToMove, kingLocation ) ) {
+
+                score = -negaMax( depth - 1, childPV );               
+                
+                if ( score > max ) {
+                    
+                    max = score;
+                    
+                    if( parentPV.isEmpty() ){
+                        
+                        parentPV.add( moves.get( i ) );
+                        
+                    } else {
+                        
+                        parentPV.set( 0, moves.get( i ) );
+                                
+                    }
+                     
+                    if ( parentPV.size() > 1 ) {
+
+                        for ( int j = 0; j < childPV.size(); j++ ) {
+
+                            parentPV.set( j + 1, childPV.get( j ) );
+
+                        }
+
+                    } else {
+
+                        parentPV.addAll( 1, childPV );
+
+                    }
+                   
+                    if ( depth == 5 ) {
+
+                        System.out.println( max + ": " + parentPV );
+
+                    }
+
+                }
+                
+            }
+            
+            board.unmakeMove( moves.get( i ) );
+            
+        }
+        
+        return max;
+    }
+    
+    public void start_perft(){
+        
+        long time = System.nanoTime();
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        System.out.println( "Performance test" );
+        
+        for(int i = 1; i <= 6; i++){            
+            
+            System.out.println( "depth: "+i+" time: "+twoDForm.format((System.nanoTime()-time) / Math.pow(10, 9))+" nodes: "+perft( i ) );
+            
+        }
+        
+    }
+    
+    int perft( int depth ){
+        
+        int nodes = 0;
+        
+        if( depth == 0 ){
+            return 1;
+        }
+        
+        List<Move> moves = board.generateMoves();        
+        int numberOfMoves = moves.size();
+                
+        for( int i = 0; i < numberOfMoves; i++ ){
+            
+            board.makeMove( moves.get( i ) );
+            //System.out.println( moves );
+            if( board.sideToMove < 0 ){
+                kingLocation = Board.getKeyByValue( board.locationOfWhitePieces, W_KING );            
+            }else{
+                kingLocation = Board.getKeyByValue( board.locationOfBlackPieces, B_KING );   
+            }
+            
+            if( !board.isAttacked( board.sideToMove, kingLocation ) ){
+                
+                nodes += perft( depth - 1 );                
+               
+            }
+            
+            board.unmakeMove( moves.get( i ) );
+           
+        }
+                
+        return nodes;
     }
 
 }
