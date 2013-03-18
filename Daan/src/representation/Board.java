@@ -2,52 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package daan;
+package representation;
 
-import static daan.Constants.BLACK;
-import static daan.Constants.B_BISHOP;
-import static daan.Constants.B_KING;
-import static daan.Constants.B_KNIGHT;
-import static daan.Constants.B_PAWN;
-import static daan.Constants.B_QUEEN;
-import static daan.Constants.B_ROOK;
-import static daan.Constants.CAB_KING_SIDE;
-import static daan.Constants.CAB_QUEEN_SIDE;
-import static daan.Constants.CAW_KING_SIDE;
-import static daan.Constants.CAW_QUEEN_SIDE;
-import static daan.Constants.EMPTY_SQUARE;
-import static daan.Constants.INDEX_BISHOP_DIRECTION;
-import static daan.Constants.INDEX_KING_DIRECTION;
-import static daan.Constants.INDEX_KNIGHT_DIRECTION;
-import static daan.Constants.INDEX_QUEEN_DIRECTION;
-import static daan.Constants.MOVE_TYPE_CAPTURE;
-import static daan.Constants.MOVE_TYPE_CASTLE;
-import static daan.Constants.MOVE_TYPE_NORMAL;
-import static daan.Constants.MOVE_TYPE_PROMOTION;
-import static daan.Constants.NE;
-import static daan.Constants.NN;
-import static daan.Constants.NORTH;
-import static daan.Constants.NW;
-import static daan.Constants.PIECE_VECTORS;
-import static daan.Constants.SE;
-import static daan.Constants.SOUTH;
-import static daan.Constants.SQUARE_INDEX_MAPPINGS;
-import static daan.Constants.SS;
-import static daan.Constants.SW;
-import static daan.Constants.VALUE_BISHOP;
-import static daan.Constants.VALUE_KING;
-import static daan.Constants.VALUE_KNIGHT;
-import static daan.Constants.VALUE_PAWN;
-import static daan.Constants.VALUE_QUEEN;
-import static daan.Constants.VALUE_ROOK;
-import static daan.Constants.WHITE;
-import static daan.Constants.W_BISHOP;
-import static daan.Constants.W_KING;
-import static daan.Constants.W_KNIGHT;
-import static daan.Constants.W_PAWN;
-import static daan.Constants.W_QUEEN;
-import static daan.Constants.W_ROOK;
+import static daan.utils.Constants.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +18,10 @@ import java.util.Set;
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl> created
  * 14-feb-2013, 10:22:53
  */
-public class Board implements Constants {
+public class Board{
 
     //current position in 0x88 format, 0x00=A1, 0x07=H1
-    private int[] position;
+    public int[] position;
     
     //keeps a list of the location --> the white pieces
     public HashMap<Integer, Integer> locationOfWhitePieces;
@@ -85,9 +44,12 @@ public class Board implements Constants {
     //incremented after black move, starts at 1
     private int fullMoveNumber;
     
-    private List<Move> history;
-    
+    //possible pseudo moves for current board
     private List<Move> moves;
+    
+    public int whiteKingPosition;
+    
+    public int blackKingPosition;
 
     public Board() {
         initPosition(FEN_START_POSITION);
@@ -100,8 +62,7 @@ public class Board implements Constants {
     private void initPosition(String fen) {
         position = new int[128];
         locationOfWhitePieces = new HashMap<>();
-        locationOfBlackPieces = new HashMap<>();                
-        history = new ArrayList<>();
+        locationOfBlackPieces = new HashMap<>();  
         sideToMove = WHITE;
         castlingAvailability = 0;
         enPassant = -1;
@@ -121,11 +82,27 @@ public class Board implements Constants {
                         if (Character.isLetter(positionInFEN.charAt(j))) {//piece
 
                                 position[currentPositionIndex] = PIECE_CHARACTER_MAPPINGS.get(positionInFEN.charAt(j));
-                                if(Character.isUpperCase( positionInFEN.charAt(j))){
-                                    locationOfWhitePieces.put(currentPositionIndex, position[currentPositionIndex]);
-                                }else{
-                                    locationOfBlackPieces.put(currentPositionIndex, position[currentPositionIndex]);
+                                
+                                if( position[currentPositionIndex] == W_KING ){
+                                    
+                                    whiteKingPosition = currentPositionIndex;
+                                    
+                                } else if ( position[currentPositionIndex] == B_KING ){
+                                    
+                                    blackKingPosition = currentPositionIndex;
+                                    
                                 }
+                                
+                               if ( Character.isUpperCase( positionInFEN.charAt( j ) ) ) {
+                                   
+                                locationOfWhitePieces.put( currentPositionIndex, position[currentPositionIndex] );
+                                
+                                } else {
+                                   
+                                locationOfBlackPieces.put( currentPositionIndex, position[currentPositionIndex] );
+                                
+                                }
+                               
                                 currentPositionIndex++;
                                 
                         } else if (Character.isDigit(positionInFEN.charAt(j))) {//number of empty squares
@@ -145,7 +122,8 @@ public class Board implements Constants {
 
                 case 1://sideToMove
                     
-                    sideToMove = (fenArray[i].equals("w")) ? WHITE : BLACK;
+                    sideToMove = ( fenArray[ i ].equals( "w" ) ) ? WHITE : BLACK;
+                    
                     break;
                     
                 case 2://castlingAvailability
@@ -282,6 +260,24 @@ public class Board implements Constants {
         }
         return null;
     }
+    
+    public List filterCaptureMoves( List<Move> moves ){
+        
+        List<Move> captures = new ArrayList<>();
+        
+        for( Move move : moves ){
+            
+            if( ( move.type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
+                
+                captures.add( move );
+                
+            }
+            
+        }
+        
+        return captures;
+        
+    }
 
     public List generateMoves() {
 
@@ -290,6 +286,7 @@ public class Board implements Constants {
 
         //use correct piece list
         Set<Map.Entry<Integer, Integer>> locationOfPieces = ( sideToMove == WHITE ) ? locationOfWhitePieces.entrySet() : locationOfBlackPieces.entrySet();
+        //System.out.println( locationOfPieces );
 
         //loop through all pieces
         for ( Map.Entry<Integer, Integer> entry : locationOfPieces ) {
@@ -297,27 +294,35 @@ public class Board implements Constants {
             switch ( Math.abs( entry.getValue() ) ) {//temporarily absolute value just to check type of piece  
 
                 case W_PAWN:
-                    generatePseudoPawnMoves( entry.getKey() );
+                    //System.out.println( "generating pawn moves" );
+                    generatePseudoPawnMoves( entry.getKey() );                    
                     break;
-                case W_KNIGHT:
+                case W_KNIGHT:            
+                    //System.out.println( "generating knight moves" );
                     generatePseudoKnightMoves( entry.getKey() );
                     break;
                 case W_BISHOP: 
+                    //System.out.println( "generating bishop moves" );
                     generatePseudoBishopMoves( entry.getKey() );
                     break;
                 case W_KING:
+                    //System.out.println( "generating king moves" );
                     generatePseudoKingMoves( entry.getKey() );
                     break;
                 case W_QUEEN: 
+                    //System.out.println( "generating queen moves" );
                     generatePseudoQueenMoves( entry.getKey() );
                     break;
                 case W_ROOK: 
+                    //System.out.println( "generating rook moves" );
                     generatePseudoRookMoves( entry.getKey() );
                     break;
 
             }
 
         }
+        
+        Collections.sort( moves, MVV_LVA_ORDER );
 
         return moves;
 
@@ -360,8 +365,8 @@ public class Board implements Constants {
                     
                 }
                 
-                capture = position[ square + NW ];
-                
+                capture = offTheBoard( square + NW ) ? EMPTY_SQUARE : position[ square + NW ];                    
+                    
                 //pawn takes NW or NE one                
                 if ( isBlackPiece( capture ) ) {
                     
@@ -383,7 +388,7 @@ public class Board implements Constants {
 
                 }
                 
-                capture = position[ square + NE ];
+                capture = offTheBoard( square + NE ) ? EMPTY_SQUARE : position[ square + NE ];
                 
                 if ( isBlackPiece( capture ) ) {
                     
@@ -452,12 +457,12 @@ public class Board implements Constants {
                     
                 } 
                 
-                capture = position[ square + SW ];
-                
+                capture = offTheBoard( square + SW ) ? EMPTY_SQUARE : position[ square + SW ];
+                    
                 //pawn takes SW or SE one                     
                 if ( isWhitePiece( capture ) ) {
 
-                    if( getRank( square ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached     
+                    if( getRank( square ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached  
                         
                         moves.add( createMove( B_PAWN, square, square + SW, B_QUEEN, ( MOVE_TYPE_PROMOTION | MOVE_TYPE_CAPTURE ), capture ) );
                         
@@ -475,8 +480,8 @@ public class Board implements Constants {
 
                 }                
                 
-                capture = position[ square + SE ];
-                
+                capture = offTheBoard( square + SE ) ? EMPTY_SQUARE : position[ square + SE ];                    
+                    
                 if ( isWhitePiece( capture ) ) {
                     
                     if( getRank( square ) == 1 ){ //pawn promotes to queen/rook/bishop/knight if first rank reached     
@@ -498,13 +503,13 @@ public class Board implements Constants {
                 }
                 
                 //if enpassant is available, then pawn can also take neighbour pawn by moving to enpassant square behind neighbour pawn
-                if( square + SW == enPassant ){
+                if( square + SW == enPassant && !offTheBoard( square + SW ) ){
                     
                     moves.add( createMove( B_PAWN, square, square + SW, B_PAWN, MOVE_TYPE_EP, W_PAWN ) );
                     
                 }
                 
-                 if( square + SE == enPassant ){
+                 if( square + SE == enPassant && !offTheBoard( square + SE ) ){
                     
                     moves.add( createMove( B_PAWN, square, square + SE, B_PAWN, MOVE_TYPE_EP, W_PAWN ) );
                     
@@ -738,7 +743,6 @@ public class Board implements Constants {
             System.out.println( move.pieceFrom );
             System.out.println( move.from );
             System.out.println( move.to );
-            System.out.println( move.castleAvailability );
             System.out.println( this );
         }
                 
@@ -765,6 +769,17 @@ public class Board implements Constants {
         
         //also covers promotion       
         fillSquare( move.pieceTo, move.to );
+        
+        
+        if( move.pieceFrom == W_KING ){
+            
+            whiteKingPosition = move.to;
+            
+        } else if ( move.pieceFrom == B_KING ){
+            
+            blackKingPosition = move.to;
+            
+        } 
         
         //update castle flags if king or rook has moved
         switch( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.from ) ){
@@ -858,6 +873,16 @@ public class Board implements Constants {
         clearSquare( move.to );
         
         fillSquare( move.pieceFrom, move.from );
+        
+        if( move.pieceFrom == W_KING ){
+            
+            whiteKingPosition = move.from;
+            
+        } else if ( move.pieceFrom == B_KING ){
+            
+            blackKingPosition = move.from;
+            
+        } 
         
         if( ( move.type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
             fillSquare( move.capture, move.to );                        
@@ -1044,8 +1069,11 @@ public class Board implements Constants {
         return piece < 0;
     }
     
+    
     private boolean offTheBoard( int square ){
-        return ( ( square & 0x88 ) != 0 );
+        
+        return ( ( square & 0x88 ) > 0 );
+        
     }
 
     private boolean knightAttack( int byColor, int square ) {
@@ -1145,10 +1173,10 @@ public class Board implements Constants {
         int queen = ( byColor == WHITE ) ? W_QUEEN : B_QUEEN;
         int bishop = ( byColor == WHITE ) ? W_BISHOP : B_BISHOP;
 
-        for ( int direction = 0; direction < PIECE_VECTORS[ INDEX_BISHOP_DIRECTION].length; direction++ ) {
+        for ( int direction = 0; direction < PIECE_VECTORS[ INDEX_BISHOP_DIRECTION ].length; direction++ ) {
 
             int step = 1;
-            sliderMove = square + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION][ direction] * step;
+            sliderMove = square + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION][ direction ] * step;
 
             while ( !offTheBoard( sliderMove ) ) {
 
@@ -1187,17 +1215,93 @@ public class Board implements Constants {
         
     }
     
-    double evaluate(){
-        double valueWhite = 0;
-        double valueBlack = 0;
+    public int evaluate(){
+        
+        //king can be in check and there are no possible moves, then evaluate to checkmate
+        List<Move> moves = generateMoves();
+        
+        boolean noLegalMoves = true;
+        
+        for(int i=0; i<moves.size(); i++){
+            
+            makeMove( moves.get( i ) );
+            
+            int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+            
+            if ( !isAttacked( -sideToMove, kingPosition ) ) {                
+                
+                noLegalMoves = false;
+                
+                unmakeMove( moves.get( i ) );
+                
+                break;
+                
+            }
+            
+            unmakeMove( moves.get( i ) );
+            
+        }
+        
+        if( noLegalMoves ){
+            
+            int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+            
+            if( isAttacked( -sideToMove, kingPosition ) ){
+                
+                //use only depthLeft, otherwise evaluation is incorrect, correct this in search()
+                return ( VALUE_MATE +  ( MAX_DEPTH_SEARCH ) ) * -sideToMove;
+                
+            } else {
+                
+                //stalemate
+                return VALUE_DRAW;
+                
+            }
+        }
+        
+        int valueWhite = 0;
+        int valueBlack = 0;
         
         Set<Map.Entry<Integer, Integer>> entrySetWhite = locationOfWhitePieces.entrySet();
-        Set<Map.Entry<Integer, Integer>> entrySetBlack = locationOfBlackPieces.entrySet();
+        Set<Map.Entry<Integer, Integer>> entrySetBlack = locationOfBlackPieces.entrySet();        
+        
+        if ( entrySetWhite.size() <= 2 && entrySetBlack.size() <= 2 ) {
+
+            //two pieces are only left, must be kings, thus a draw
+            if ( entrySetWhite.size() == 1 && entrySetBlack.size() == 1 ) {
+
+                return VALUE_DRAW;
+
+            }
+
+            
+            for ( Map.Entry<Integer, Integer> entry : entrySetWhite ) {
+                
+                //with only a bishop or knight there is no mate possibility
+                if ( entry.getValue() == W_BISHOP || entry.getValue() == W_KNIGHT ) {
+
+                    return VALUE_DRAW;
+
+                }
+
+            }
+
+            for ( Map.Entry<Integer, Integer> entry : entrySetBlack ) {
+
+                //with only a bishop or knight there is no mate possibility
+                if ( entry.getValue() == B_BISHOP || entry.getValue() == B_KNIGHT ) {
+
+                    return VALUE_DRAW;
+
+                }
+
+            }
+
+        }    
         
         for(Map.Entry<Integer, Integer> entry : entrySetWhite ){
             
             switch( entry.getValue() ){
-                case W_KING:    valueWhite += VALUE_KING;   break;
                 case W_QUEEN:   valueWhite += VALUE_QUEEN;  break;
                 case W_ROOK:    valueWhite += VALUE_ROOK;   break;
                 case W_BISHOP:  valueWhite += VALUE_BISHOP; break;                        
@@ -1210,7 +1314,6 @@ public class Board implements Constants {
         for(Map.Entry<Integer, Integer> entry : entrySetBlack ){
             
             switch( entry.getValue() ){
-                case B_KING:    valueBlack += VALUE_KING;   break;
                 case B_QUEEN:   valueBlack += VALUE_QUEEN;  break;
                 case B_ROOK:    valueBlack += VALUE_ROOK;   break;
                 case B_BISHOP:  valueBlack += VALUE_BISHOP; break;                        
@@ -1224,4 +1327,28 @@ public class Board implements Constants {
         
     }
     
+    public void makeMoves( String[] moves ){
+        
+        for(int i=0; i<moves.length; i++){
+            
+            List<Move> listOfMoves = generateMoves();
+            
+            for( Move move : listOfMoves ){
+                
+                if(move.toString().equals( moves[i] )){
+                    
+                    makeMove( move );
+                    
+                    break;
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
+    
 }
+
+

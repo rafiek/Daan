@@ -2,11 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package daan;
+package daan.utils;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import representation.Move;
 
 /**
  *
@@ -19,12 +21,14 @@ public interface Constants {
     
     public static final int EMPTY_SQUARE = 0;
     
-    public static final int VALUE_KING      = 100;
-    public static final int VALUE_QUEEN     = 9;
-    public static final int VALUE_ROOK      = 5;
-    public static final double VALUE_BISHOP = 3.1;
-    public static final int VALUE_KNIGHT    = 3;
-    public static final int VALUE_PAWN      = 1;
+    public static final int VALUE_QUEEN     = 900;
+    public static final int VALUE_ROOK      = 500;
+    public static final int VALUE_BISHOP    = 301;
+    public static final int VALUE_KNIGHT    = 300;
+    public static final int VALUE_PAWN      = 100;
+    
+    public static final int VALUE_MATE      = 100000;
+    public static final int VALUE_DRAW      = 0;
     
     public static final int W_KING      = 1;
     public static final int W_QUEEN     = 2;
@@ -95,31 +99,55 @@ public interface Constants {
 
                     });
     
+    public static final Map<Integer, Integer> PIECE_VALUE_MAPPINGS = 
+            Collections.unmodifiableMap(
+                    new HashMap<Integer, Integer>() {
+                        {
+                            
+                            put( W_QUEEN    , VALUE_QUEEN     );
+                            put( W_ROOK     , VALUE_ROOK      );
+                            put( W_BISHOP   , VALUE_BISHOP    );
+                            put( W_KNIGHT   , VALUE_KNIGHT    );
+                            put( W_PAWN     , VALUE_PAWN      );                            
+                            put( W_KING     , 0               );
+                           
+                        }
+
+                    });
+    
     public static final int MOVE_TYPE_NORMAL    = 0;
     public static final int MOVE_TYPE_CAPTURE   = 1;
     public static final int MOVE_TYPE_EP        = 2;
     public static final int MOVE_TYPE_CASTLE    = 4;
     public static final int MOVE_TYPE_PROMOTION = 8;
     
-    public static final int INDEX_KING_DIRECTION    = 0;
-    public static final int INDEX_QUEEN_DIRECTION   = 1;
-    public static final int INDEX_ROOK_DIRECTION    = 2;
-    public static final int INDEX_BISHOP_DIRECTION  = 3;
-    public static final int INDEX_KNIGHT_DIRECTION  = 4;    
-    
-    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N  
-    
-        public final static int[][] PIECE_VECTORS ={//K, Q, R, B, N
-        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
-        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE  },
-        { SOUTH, WEST, EAST, NORTH                  },
-        { SW, SE, NW, NE                            },
-        { -33, -31, -18, -14, 14, 18, 31, 33        }
-    };
-    
-    
+    public static final int INDEX_KING_DIRECTION = 0;
+    public static final int INDEX_QUEEN_DIRECTION = 1;
+    public static final int INDEX_ROOK_DIRECTION = 2;
+    public static final int INDEX_BISHOP_DIRECTION = 3;
+    public static final int INDEX_KNIGHT_DIRECTION = 4;
 
+    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N  
+
+    public final static int[][] PIECE_VECTORS = {//K, Q, R, B, N
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
+        { SOUTH, WEST, EAST, NORTH },
+        { SW, SE, NW, NE },
+        { -33, -31, -18, -14, 14, 18, 31, 33 }
+    };
+
+    public static final int START_VALUE_ALPHA   = -1000000;
+    public static final int START_VALUE_BETA    = 1000000;
     
+    public static final int MAX_DEPTH_SEARCH    = 5;
     
+    public static final Comparator<Move> MVV_LVA_ORDER = 
+            new Comparator<Move>(){
+                @Override
+                public int compare( Move m1, Move m2 ){
+                    return m2.score - m1.score;
+                }
+            };
         
 }

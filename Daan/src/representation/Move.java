@@ -3,16 +3,16 @@
  * and open the template in the editor.
  */
 
-package daan;
+package representation;
 
-import static daan.Constants.SQUARE_INDEX_MAPPINGS;
+import static daan.utils.Constants.*;
 
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  * created 20-feb-2013, 14:18:05
  */
-public class Move implements Constants{
+public class Move {
     
     public int pieceFrom;
     public int from;
@@ -23,6 +23,7 @@ public class Move implements Constants{
     public int castleAvailability;
     public int halfMoveClock;
     public int enPassant;
+    public int score;
 
     public Move(int pieceFrom, int from, int to, int pieceTo, int type, int capture, int castleAvailability, int halfMoveClock, int enPassant) {
         this.pieceFrom          = pieceFrom;
@@ -33,7 +34,8 @@ public class Move implements Constants{
         this.type               = type;
         this.castleAvailability = castleAvailability;
         this.halfMoveClock      = halfMoveClock;
-        this.enPassant          = enPassant;
+        this.enPassant          = enPassant;        
+        this.score              = ( capture != EMPTY_SQUARE ) ? PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) ) - PIECE_VALUE_MAPPINGS.get( Math.abs( pieceFrom ) ) : 0;
     }
     
     @Override
@@ -45,21 +47,19 @@ public class Move implements Constants{
         
         if ( ( this.type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ) {
 
-            sb.append( "=" );
-
             switch ( Math.abs( pieceTo ) ) {
 
                 case W_QUEEN:
-                    sb.append( "Q" );
+                    sb.append( "q" );
                     break;
                 case W_ROOK:
-                    sb.append( "R" );
+                    sb.append( "r" );
                     break;
                 case W_BISHOP:
-                    sb.append( "B" );
+                    sb.append( "b" );
                     break;
                 case W_KNIGHT:
-                    sb.append( "N" );
+                    sb.append( "n" );
                     break;
 
             }

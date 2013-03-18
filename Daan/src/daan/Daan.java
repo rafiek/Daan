@@ -4,11 +4,13 @@
  */
 package daan;
 
+import daan.ai.Engine;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static daan.utils.Constants.*;
 
 /**
  *
@@ -21,9 +23,17 @@ public class Daan {
      */
     public static void main(String[] args)
     {
-        Engine engine = new Engine("5rk1/p3qppp/8/3R4/8/1P4P1/PQ5P/7K b - - 0 1");
-        System.out.println( engine.board );
-        engine.search(5);
+        //Engine engine = new Engine("8/8/1KbB4/Q1p5/2R2n2/r1q1k3/1P2N3/8 w - - 0 1");
+        //System.out.println( engine.board.generateMoves() );
+        Engine engine = null;
+        //engine = new Engine();
+        //engine.start_perft();
+        //System.out.println( engine.board );
+        //engine.search(5);
+        
+        //engine = new Engine();
+        //engine.start_perft();
+        
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String command = "";
@@ -38,27 +48,50 @@ public class Daan {
             }
             
             if (command.equals("uci")) {
-                System.out.println("\t id name Daan");
-                System.out.println("\t id author Rafiek Mohamedjoesoef");
+                System.out.println("id name Daan");
+                System.out.println("id author Rafiek Mohamedjoesoef");
                 //no options so send "uciok"
-                System.out.println("\t uciok");
+                System.out.println("uciok");
             }
             
             if(command.equals("quit")){
-                System.out.println("\t goodbye");
+                System.out.println("goodbye");
                 System.exit(0);
             }          
             
             if(command.equals("isready")){
+                if( engine == null ){
+                    
+                    engine = new Engine();
+                    
+                }                
                 
-                System.out.println("\t readyok");
+                System.out.println("readyok");
+            }
+            
+            if( command.equals( "ucinewgame") ){
+                engine = new Engine();
             }
             
             if(command.startsWith("position")){
+                if(command.indexOf( "fen" ) > -1){
+                    
+                }else if(command.indexOf( "startpos" ) > -1){
+                    engine = new Engine();
+                }
+                
+                if( command.indexOf( "moves" ) > -1 ){
+                    //engine = new Engine();
+                    String moves = command.substring( command.indexOf( "moves" ) + 6 );
+                    engine.makeMoves( moves.split(" ") );
+                }
+                
                 
             }
             
-            if(command.equals("go")){
+            if(command.indexOf("go") > -1){
+                
+                engine.search( MAX_DEPTH_SEARCH );
                 
             }
         }
