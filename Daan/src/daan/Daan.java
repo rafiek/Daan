@@ -76,8 +76,13 @@ public class Daan {
             if(command.startsWith("position")){
                 if(command.indexOf( "fen" ) > -1){
                     
+                    String fen = command.substring( command.indexOf( "fen" ) + 4 );
+                    engine = new Engine( fen );
+                    
                 }else if(command.indexOf( "startpos" ) > -1){
+                    
                     engine = new Engine();
+                    
                 }
                 
                 if( command.indexOf( "moves" ) > -1 ){

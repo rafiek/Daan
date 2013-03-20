@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import representation.Move;
+import daan.representation.Move;
 
 /**
  *
@@ -27,7 +27,7 @@ public interface Constants {
     public static final int VALUE_KNIGHT    = 300;
     public static final int VALUE_PAWN      = 100;
     
-    public static final int VALUE_MATE      = 100000;
+    public static final int VALUE_MATE      = 1000000;
     public static final int VALUE_DRAW      = 0;
     
     public static final int W_KING      = 1;
@@ -109,7 +109,7 @@ public interface Constants {
                             put( W_BISHOP   , VALUE_BISHOP    );
                             put( W_KNIGHT   , VALUE_KNIGHT    );
                             put( W_PAWN     , VALUE_PAWN      );                            
-                            put( W_KING     , 0               );
+                            put( W_KING     , 990             );
                            
                         }
 

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package representation;
+package daan.representation;
 
 import static daan.utils.Constants.*;
 import java.util.ArrayList;
@@ -1215,30 +1215,30 @@ public class Board{
         
     }
     
-    public int evaluate(){
+    public int evaluate( int depthLeft ){
         
         //king can be in check and there are no possible moves, then evaluate to checkmate
-        List<Move> moves = generateMoves();
+        List<Move> pseudoMoves = generateMoves();
         
         boolean noLegalMoves = true;
         
-        for(int i=0; i<moves.size(); i++){
+        for(int i=0; i<pseudoMoves.size(); i++){
             
-            makeMove( moves.get( i ) );
+            makeMove( pseudoMoves.get( i ) );
             
-            int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+            int kingPosition = ( sideToMove == WHITE ) ? blackKingPosition : whiteKingPosition;
             
-            if ( !isAttacked( -sideToMove, kingPosition ) ) {                
+            if ( !isAttacked( sideToMove, kingPosition ) ) {                
                 
                 noLegalMoves = false;
                 
-                unmakeMove( moves.get( i ) );
+                unmakeMove( pseudoMoves.get( i ) );
                 
                 break;
                 
             }
             
-            unmakeMove( moves.get( i ) );
+            unmakeMove( pseudoMoves.get( i ) );
             
         }
         
@@ -1249,7 +1249,7 @@ public class Board{
             if( isAttacked( -sideToMove, kingPosition ) ){
                 
                 //use only depthLeft, otherwise evaluation is incorrect, correct this in search()
-                return ( VALUE_MATE +  ( MAX_DEPTH_SEARCH ) ) * -sideToMove;
+                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * sideToMove;
                 
             } else {
                 

@@ -5,8 +5,8 @@
 
 package daan.ai;
 
-import representation.Board;
-import representation.Move;
+import daan.representation.Board;
+import daan.representation.Move;
 import daan.utils.Constants.*;
 import static daan.utils.Constants.*;
 import java.text.DecimalFormat;
@@ -68,17 +68,23 @@ public class Engine{
             System.out.print( "info" );
             System.out.print( " nodes " + visitedNodes );
 
-            if ( Math.abs( eval ) >= VALUE_MATE ) {
+            if ( Math.abs( eval ) > 100000 ) {
 
-                System.out.print( " score mate " + ( Math.abs( eval ) - VALUE_MATE ) );
+                int mateDistance = VALUE_MATE - Math.abs( eval );
+                
+                //using a hack to print the correct amount of moves, should fix this in the search
+                System.out.print( " score mate " + mateDistance );
+                List<Move> subList = principalVariation.subList( 0, mateDistance );
+                System.out.println( " pv " + subList.toString().substring( 1, subList.toString().length() - 1 ) );
 
             } else {
 
                 System.out.print( " score cp " + eval );
+                System.out.println( " pv " + principalVariation.toString().substring( 1, principalVariation.toString().length() - 1 ) );
 
             }
 
-            System.out.println( " pv " + principalVariation.toString().substring( 1, principalVariation.toString().length() - 1 ) );
+            
             System.out.println( "bestmove " + principalVariation.get( 0 ) );
 
         } else {
@@ -95,7 +101,7 @@ public class Engine{
         
         if( depthLeft == 0 ){
             
-            return board.evaluate();
+            return quiescenceSearch( alpha, beta );
             
         }
         
@@ -134,19 +140,17 @@ public class Engine{
                 if ( score >= beta ) {
                     
                     board.unmakeMove( moves.get( i ) );
-                    //System.out.println( "score: "+score+" beta: "+beta );
                     return beta;
                     
                 }
                 
                 if( score > alpha ){
-                    
-                    //System.out.println( "score: "+score+" alpha: "+alpha );
 
                     alpha = score;
 
                     if( parentPV.isEmpty() ){
                         
+                        parentPV.trimToSize();
                         parentPV.add( moves.get( i ) );    
                         
                     } else {
@@ -159,7 +163,8 @@ public class Engine{
 
                         if ( parentPV.size() - 2 < j ) {
 
-                            parentPV.add( j + 1, childPV.get( j ) );
+                            parentPV.addAll( j + 1, childPV );
+                            break;
 
                         } else {
 
@@ -167,7 +172,7 @@ public class Engine{
 
                         }
 
-                    }                 
+                    }
 
                 }
                 
@@ -176,9 +181,9 @@ public class Engine{
                     System.out.print( "info" );
                     System.out.print( " nodes " + visitedNodes );
                     
-                    if( Math.abs( alpha ) > VALUE_MATE ){
+                    if( Math.abs( alpha ) > 100000 ){
                         
-                        System.out.println( " score mate " + ( Math.abs( alpha ) - VALUE_MATE ) );                        
+                        System.out.print( " score mate " + ( VALUE_MATE - Math.abs( alpha ) ) );                        
                         
                     } else {
                         
@@ -202,8 +207,7 @@ public class Engine{
             
             if( board.isAttacked( -board.sideToMove, kingPosition ) ){
                 
-                //use only depthLeft, otherwise evaluation is incorrect, correct this in search()
-                return ( VALUE_MATE +  ( MAX_DEPTH_SEARCH - depthLeft ) ) * -board.sideToMove;
+                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * board.sideToMove;
                 
             } else {
                 
@@ -266,6 +270,62 @@ public class Engine{
         
         board.makeMoves( moves );
         
+    }
+
+    private int quiescenceSearch( int alpha, int beta ) {
+
+        int standPat = board.evaluate( 0 );
+
+        if ( standPat >= beta ) {
+
+            return beta;
+
+        }
+
+        if ( standPat > alpha ) {
+
+            alpha = standPat;
+
+        }
+
+        List<Move> moves = board.filterCaptureMoves( board.generateMoves() );
+        int numberOfMoves = moves.size();
+
+        for ( int i = 0; i < numberOfMoves; i++ ) {
+
+            board.makeMove( moves.get( i ) );
+
+            //find position of king of the side that just moved
+            int kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
+
+            //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
+            if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {
+
+                visitedNodes++;
+
+                int score = -quiescenceSearch( -beta, -alpha );
+
+                if ( score >= beta ) {
+
+                    board.unmakeMove( moves.get( i ) );
+                    return beta;
+
+                }
+
+                if ( score > alpha ) {
+
+                    alpha = score;
+
+                }
+
+            }
+
+            board.unmakeMove( moves.get( i ) );
+
+        }
+
+        return alpha;
+
     }
 
 }

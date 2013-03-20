@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package representation;
+package daan.representation;
 
 import static daan.utils.Constants.*;
 
@@ -35,7 +35,7 @@ public class Move {
         this.castleAvailability = castleAvailability;
         this.halfMoveClock      = halfMoveClock;
         this.enPassant          = enPassant;        
-        this.score              = ( capture != EMPTY_SQUARE ) ? PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) ) - PIECE_VALUE_MAPPINGS.get( Math.abs( pieceFrom ) ) : 0;
+        this.score              = calculateScore();
     }
     
     @Override
@@ -66,6 +66,20 @@ public class Move {
 
         }
         return sb.toString();
+    }
+    
+    private int calculateScore(){
+        
+        int result = ( capture != EMPTY_SQUARE ) ? PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) ) : 0;
+        
+        if( result > 0 ){
+            
+            result += 100 - ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceFrom ) ) / 10 );
+            
+        }
+        
+        return result;
+        
     }
 
 }

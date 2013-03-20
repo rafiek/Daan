@@ -4,7 +4,7 @@
  */
 package daan;
 
-import representation.Board;
+import daan.representation.Board;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
