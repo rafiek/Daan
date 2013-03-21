@@ -143,7 +143,8 @@ public class Engine{
 
                 if ( score >= beta ) {
 
-                    board.unmakeMove( moves.get( i ) );
+                    board.unmakeMove( moves.get( i ) );                    
+                    bestMove.next = bestLine;
                     Move betaMove = new Move();
                     betaMove.score = beta;
                     return betaMove;
@@ -205,7 +206,7 @@ public class Engine{
             
         }
 
-        return new Move( bestMove );
+        return bestMove;
     }
     
     public void start_perft(){
