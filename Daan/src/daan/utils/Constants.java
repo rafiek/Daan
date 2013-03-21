@@ -137,8 +137,8 @@ public interface Constants {
         { -33, -31, -18, -14, 14, 18, 31, 33 }
     };
 
-    public static final int START_VALUE_ALPHA   = -1000000;
-    public static final int START_VALUE_BETA    = 1000000;
+    public static final int START_VALUE_ALPHA   = -10000000;
+    public static final int START_VALUE_BETA    = 10000000;
     
     public static final int MAX_DEPTH_SEARCH    = 5;
     

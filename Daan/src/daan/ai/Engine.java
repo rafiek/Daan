@@ -57,55 +57,55 @@ public class Engine{
     /*
      * root alphaBeta
      */
-    public List<Move> search( int depth ) {
+    public Move search( int depth ) {
 
-        principalVariation = new ArrayList<>();
+        
         visitedNodes = 0;
-        int eval = alphaBeta( START_VALUE_ALPHA, START_VALUE_BETA, depth, principalVariation );
+        Move bestMove = new Move();
+        alphaBeta( START_VALUE_ALPHA, START_VALUE_BETA, depth, bestMove );
 
-        if ( !principalVariation.isEmpty() ) {
+        //if ( bestMove != null ) {
 
             System.out.print( "info" );
             System.out.print( " nodes " + visitedNodes );
 
-            if ( Math.abs( eval ) > 100000 ) {
+            if ( Math.abs( bestMove.score ) > 100000 ) {
 
-                int mateDistance = VALUE_MATE - Math.abs( eval );
+                int mateDistance = VALUE_MATE - Math.abs( bestMove.score );
                 
                 //using a hack to print the correct amount of moves, should fix this in the search
-                System.out.print( " score mate " + mateDistance );
-                List<Move> subList = principalVariation.subList( 0, mateDistance );
-                System.out.println( " pv " + subList.toString().substring( 1, subList.toString().length() - 1 ) );
+                System.out.print( " score mate " + mateDistance );                
 
             } else {
 
-                System.out.print( " score cp " + eval );
-                System.out.println( " pv " + principalVariation.toString().substring( 1, principalVariation.toString().length() - 1 ) );
+                System.out.print( " score cp " + bestMove.score );
 
             }
-
             
-            System.out.println( "bestmove " + principalVariation.get( 0 ) );
+            System.out.println( " pv " + bestMove.getLine() );
+            
+            System.out.println( "bestmove " + bestMove );
 
-        } else {
+        //} else {
 
-            System.out.println( "pv is empty" );
+        //    System.out.println( "pv is empty" );
 
-        }
+        //}
 
-        return principalVariation;
+        return bestMove;
 
     }
     
-    int alphaBeta( int alpha, int beta, int depthLeft, ArrayList<Move> parentPV ){        
+    Move alphaBeta( int alpha, int beta, int depthLeft, Move bestMove ){        
         
         if( depthLeft == 0 ){
             
-            return quiescenceSearch( alpha, beta );
+            Move quiesceMove = new Move();
+            quiesceMove.score = quiescenceSearch( alpha, beta );
+            return quiesceMove;
             
         }
         
-        ArrayList<Move> childPV = new ArrayList<>();
         List<Move> moves = board.generateMoves();        
         int numberOfMoves = moves.size();
         boolean noLegalMoves = true;
@@ -119,61 +119,48 @@ public class Engine{
             
             //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
             if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {
-                
+
                 if ( depthLeft == MAX_DEPTH_SEARCH ) {
 
                     System.out.print( "info" );
                     System.out.print( " nodes " + visitedNodes );
                     System.out.print( " currmove " + moves.get( i ) );
                     System.out.println( " currmovenumber " + currentMoveNumber );
-                    
+
                     currentMoveNumber++;
 
                 }
-                
+
                 visitedNodes++;
-                
+
                 noLegalMoves = false;
 
-                int score = -alphaBeta( -beta, -alpha, depthLeft - 1, childPV );  
+                Move bestLine = bestMove.next;
                 
+                bestMove.next = alphaBeta( -beta, -alpha, depthLeft - 1, new Move() );
+
+                int score = -bestMove.next.score;
+
                 if ( score >= beta ) {
-                    
+
                     board.unmakeMove( moves.get( i ) );
-                    return beta;
-                    
+                    Move betaMove = new Move();
+                    betaMove.score = beta;
+                    return betaMove;
+
                 }
-                
-                if( score > alpha ){
+
+                if ( score > alpha ) {
 
                     alpha = score;
-
-                    if( parentPV.isEmpty() ){
-                        
-                        parentPV.trimToSize();
-                        parentPV.add( moves.get( i ) );    
-                        
-                    } else {
-                        
-                        parentPV.set( 0, moves.get( i ) );
-                        
-                    }
+                    moves.get( i ).next = bestMove.next;
+                    bestMove.copy( moves.get( i ) );
+                    bestMove.score = alpha;
+                                        
+                } else {
                     
-                    for ( int j = 0; j < childPV.size(); j++ ) {
-
-                        if ( parentPV.size() - 2 < j ) {
-
-                            parentPV.addAll( j + 1, childPV );
-                            break;
-
-                        } else {
-
-                            parentPV.set( j + 1, childPV.get( j ) );
-
-                        }
-
-                    }
-
+                    bestMove.next = bestLine;
+                    
                 }
                 
                 if ( depthLeft == MAX_DEPTH_SEARCH ) {
@@ -183,7 +170,7 @@ public class Engine{
                     
                     if( Math.abs( alpha ) > 100000 ){
                         
-                        System.out.print( " score mate " + ( VALUE_MATE - Math.abs( alpha ) ) );                        
+                        System.out.print( " score mate " + ( VALUE_MATE - Math.abs( alpha ) ) );  
                         
                     } else {
                         
@@ -191,7 +178,7 @@ public class Engine{
                         
                     }
                     
-                    System.out.println( " pv " + parentPV.toString().substring( 1, parentPV.toString().length() - 1 ) );
+                    System.out.println( " pv " + bestMove.getLine() );
 
                 }
 
@@ -207,18 +194,18 @@ public class Engine{
             
             if( board.isAttacked( -board.sideToMove, kingPosition ) ){
                 
-                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * board.sideToMove;
+                bestMove.score = - ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) );
                 
             } else {
                 
                 //stalemate
-                return VALUE_DRAW;
+                bestMove.score = VALUE_DRAW;
                 
             }
             
         }
 
-        return alpha;
+        return new Move( bestMove );
     }
     
     public void start_perft(){
@@ -277,7 +264,7 @@ public class Engine{
         int standPat = board.evaluate( 0 );
 
         if ( standPat >= beta ) {
-
+            
             return beta;
 
         }
@@ -314,7 +301,7 @@ public class Engine{
 
                 if ( score > alpha ) {
 
-                    alpha = score;
+                    alpha = score;                    
 
                 }
 

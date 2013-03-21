@@ -24,8 +24,25 @@ public class Move {
     public int halfMoveClock;
     public int enPassant;
     public int score;
+    public Move next;
 
+    public Move(){
+        
+        this.pieceFrom          = 0;
+        this.from               = 0;
+        this.to                 = 0;
+        this.pieceTo            = 0;
+        this.capture            = 0;
+        this.type               = 0;
+        this.castleAvailability = 0;
+        this.halfMoveClock      = 0;
+        this.enPassant          = 0;        
+        this.score              = 0;
+        
+    }
+    
     public Move(int pieceFrom, int from, int to, int pieceTo, int type, int capture, int castleAvailability, int halfMoveClock, int enPassant) {
+        
         this.pieceFrom          = pieceFrom;
         this.from               = from;
         this.to                 = to;
@@ -35,7 +52,30 @@ public class Move {
         this.castleAvailability = castleAvailability;
         this.halfMoveClock      = halfMoveClock;
         this.enPassant          = enPassant;        
-        this.score              = calculateScore();
+        this.score              = calculateMVVLVAScore();
+        
+    }
+    
+    public Move( Move move ){
+        
+        this.copy( move );
+        
+    }
+    
+    public void copy( Move move ){
+        
+        this.pieceFrom          = move.pieceFrom;
+        this.from               = move.from;
+        this.to                 = move.to;
+        this.pieceTo            = move.pieceTo;
+        this.capture            = move.capture;
+        this.type               = move.type;
+        this.castleAvailability = move.castleAvailability;
+        this.halfMoveClock      = move.halfMoveClock;
+        this.enPassant          = move.enPassant;        
+        this.score              = move.score;
+        this.next               = move.next;
+        
     }
     
     @Override
@@ -68,7 +108,7 @@ public class Move {
         return sb.toString();
     }
     
-    private int calculateScore(){
+    private int calculateMVVLVAScore(){
         
         int result = ( capture != EMPTY_SQUARE ) ? PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) ) : 0;
         
@@ -79,6 +119,24 @@ public class Move {
         }
         
         return result;
+        
+    }
+    
+    public String getLine() {
+        
+        Move tmp = this;
+        StringBuilder sb = new StringBuilder();
+        
+        do{
+            
+            sb.append( tmp );           
+            sb.append( " " );
+            tmp = tmp.next;
+            
+        } while( tmp.pieceFrom != 0 );
+            
+        
+        return sb.toString();
         
     }
 

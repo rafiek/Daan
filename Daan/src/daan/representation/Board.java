@@ -1180,9 +1180,9 @@ public class Board{
 
             while ( !offTheBoard( sliderMove ) ) {
 
-                if ( position[ sliderMove] != EMPTY_SQUARE ) {
+                if ( position[ sliderMove ] != EMPTY_SQUARE ) {
                     
-                    if( ( position[ sliderMove] == queen )  || ( position[ sliderMove] == bishop ) ){
+                    if( ( position[ sliderMove ] == queen )  || ( position[ sliderMove] == bishop ) ){
 //                        System.out.println( sliderMove );
 //                        System.out.println( position[ sliderMove ] );
                         return true;
@@ -1248,9 +1248,8 @@ public class Board{
             
             if( isAttacked( -sideToMove, kingPosition ) ){
                 
-                //use only depthLeft, otherwise evaluation is incorrect, correct this in search()
-                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * sideToMove;
-                
+                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * -1;
+                                
             } else {
                 
                 //stalemate
