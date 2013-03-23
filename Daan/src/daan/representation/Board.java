@@ -261,21 +261,35 @@ public class Board{
         return null;
     }
     
-    public List filterCaptureMoves( List<Move> moves ){
+    public List filterQuiescenceMoves( List<Move> moves ){
         
-        List<Move> captures = new ArrayList<>();
+        List<Move> quiescenceMoves = new ArrayList<>();
         
         for( Move move : moves ){
             
+// CHECKING THIS IS TERRIBLE FOR PERFORMANCE
+//            makeMove( move );
+//
+//            int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+//
+//            if ( isAttacked( -sideToMove, kingPosition ) ) {
+//
+//                quiescenceMoves.add( move );
+//                continue;
+//
+//            }
+//
+//            unmakeMove( move );
+            
             if( ( move.type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
                 
-                captures.add( move );
+                quiescenceMoves.add( move );
                 
-            }
+            } 
             
         }
-        
-        return captures;
+                
+        return quiescenceMoves;
         
     }
 
@@ -1248,7 +1262,7 @@ public class Board{
             
             if( isAttacked( -sideToMove, kingPosition ) ){
                 
-                return ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) ) * -1;
+                return - ( VALUE_MATE -  ( MAX_DEPTH_SEARCH - depthLeft ) );
                                 
             } else {
                 

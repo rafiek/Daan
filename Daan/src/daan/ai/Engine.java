@@ -61,8 +61,8 @@ public class Engine{
 
         
         visitedNodes = 0;
-        Move bestMove = new Move();
-        alphaBeta( START_VALUE_ALPHA, START_VALUE_BETA, depth, bestMove );
+        
+        Move bestMove = alphaBeta( START_VALUE_ALPHA, START_VALUE_BETA, depth, new Move() );
 
         //if ( bestMove != null ) {
 
@@ -100,15 +100,15 @@ public class Engine{
         
         if( depthLeft == 0 ){
             
-            Move quiesceMove = new Move();
-            quiesceMove.score = quiescenceSearch( alpha, beta );
-            return quiesceMove;
+            bestMove.score = quiescenceSearch( alpha, beta );
+            return bestMove;
             
         }
         
         List<Move> moves = board.generateMoves();        
         int numberOfMoves = moves.size();
         boolean noLegalMoves = true;
+        Move currLine;
         
         for( int i = 0; i < numberOfMoves; i++ ){    
             
@@ -134,20 +134,22 @@ public class Engine{
                 visitedNodes++;
 
                 noLegalMoves = false;
-
-                Move bestLine = bestMove.next;
                 
+                //backup currline
+                currLine = bestMove.next;
+
+                //receive new currline
                 bestMove.next = alphaBeta( -beta, -alpha, depthLeft - 1, new Move() );
 
+                //take -score of new currline
                 int score = -bestMove.next.score;
-
+                
                 if ( score >= beta ) {
 
-                    board.unmakeMove( moves.get( i ) );                    
-                    bestMove.next = bestLine;
-                    Move betaMove = new Move();
-                    betaMove.score = beta;
-                    return betaMove;
+                    board.unmakeMove( moves.get( i ) );
+                    bestMove.score = beta;
+                    
+                    return bestMove;
 
                 }
 
@@ -155,12 +157,13 @@ public class Engine{
 
                     alpha = score;
                     moves.get( i ).next = bestMove.next;
-                    bestMove.copy( moves.get( i ) );
-                    bestMove.score = alpha;
+                    moves.get( i ).score = score;
+                    bestMove = moves.get( i );
                                         
                 } else {
                     
-                    bestMove.next = bestLine;
+                    bestMove.next = currLine;
+                    bestMove.score = score;
                     
                 }
                 
@@ -276,7 +279,7 @@ public class Engine{
 
         }
 
-        List<Move> moves = board.filterCaptureMoves( board.generateMoves() );
+        List<Move> moves = board.filterQuiescenceMoves( board.generateMoves() );
         int numberOfMoves = moves.size();
 
         for ( int i = 0; i < numberOfMoves; i++ ) {

@@ -109,7 +109,7 @@ public interface Constants {
                             put( W_BISHOP   , VALUE_BISHOP    );
                             put( W_KNIGHT   , VALUE_KNIGHT    );
                             put( W_PAWN     , VALUE_PAWN      );                            
-                            put( W_KING     , 990             );
+                            put( W_KING     , 0             );
                            
                         }
 
