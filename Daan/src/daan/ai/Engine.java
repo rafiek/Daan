@@ -11,6 +11,7 @@ import daan.utils.Constants.*;
 import static daan.utils.Constants.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,13 +21,17 @@ import java.util.List;
  */
 public class Engine{
     
-    public Board board; 
+    public Board board;
 
-    private int visitedNodes;
+    public int visitedNodes;
+
+    ArrayList<Move> principalVariation;
+
+    private long maxThinkingTime;
+
+    private long startTime;
     
-    private int currentMoveNumber;
-    
-     ArrayList<Move> principalVariation;
+    List<Move> rootMoves;
     
     public Engine(){
         
@@ -43,7 +48,6 @@ public class Engine{
     private void init( String fen ){
         
         this.board = new Board(fen);
-        currentMoveNumber = 1;
         visitedNodes = 0;
         
     }
@@ -52,51 +56,163 @@ public class Engine{
         return this.board;
     }
     
-    
+    boolean timeOver() {
+        
+        if ( System.currentTimeMillis() - startTime >= maxThinkingTime ) {
+
+            return false;
+
+        } else {
+            
+            return true;
+            
+        }
+        
+    }
     
     /*
      * root alphaBeta
      */
-    public Move search( int depth ) {
-
+    public Move search( int maxDepth, long wtime, long btime ) {
         
-        visitedNodes = 0;
+        if( board.sideToMove == WHITE ){
+          
+            maxThinkingTime = wtime / board.locationOfWhitePieces.size();
+            
+        } else {
+            
+            maxThinkingTime = btime / board.locationOfBlackPieces.size();
+            
+        }
         
-        Move bestMove = alphaBeta( START_VALUE_ALPHA, START_VALUE_BETA, depth, new Move() );
-
-        //if ( bestMove != null ) {
-
-            System.out.print( "info" );
-            System.out.print( " nodes " + visitedNodes );
-
-            if ( Math.abs( bestMove.score ) > 100000 ) {
-
-                int mateDistance = VALUE_MATE - Math.abs( bestMove.score );
+        int depth = 1;
+        
+        startTime = System.currentTimeMillis();
+        
+        rootMoves = board.generateMoves();
+        
+        Move bestMove = searchRoot( START_VALUE_ALPHA, START_VALUE_BETA, depth );
+        
+        Collections.sort( rootMoves, HIGH_LOW_SCORE );                
+        
+        for( depth = 2; depth<=maxDepth; depth++){
+            
+            if( !timeOver() ){
                 
-                //using a hack to print the correct amount of moves, should fix this in the search
-                System.out.print( " score mate " + mateDistance );                
+                break;
+                
+            }
+            
+            bestMove = searchRoot( START_VALUE_ALPHA, START_VALUE_BETA, depth );
+            Collections.sort( rootMoves, HIGH_LOW_SCORE );    
+            
+        }
+        
+        System.out.print( "info" );
+        System.out.print( " nodes " + visitedNodes );
+
+        if ( Math.abs( bestMove.score ) > 100000 ) {
+
+            int mateDistance = VALUE_MATE - Math.abs( bestMove.score );
+
+            //using a hack to print the correct amount of moves, should fix this in the search
+            System.out.print( " score mate " + mateDistance );
+
+        } else {
+
+            System.out.print( " score cp " + bestMove.score );
+
+        }
+
+        System.out.println( " pv " + bestMove.getLine() );
+
+        System.out.println( "bestmove " + bestMove );
+
+        return bestMove;
+        
+    }
+    
+    Move searchRoot( int alpha, int beta, int depthLeft ) {
+
+        visitedNodes = 0;
+        Move bestMove = rootMoves.get( 0 );
+        
+        for ( int i = 0; i < rootMoves.size(); i++ ) {
+
+            board.makeMove( rootMoves.get( i ) );
+
+            //find position of king of the side that just moved
+            int kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
+
+            //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
+            if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {
+
+                System.out.print( "info" );
+                System.out.print( " nodes " + visitedNodes );
+                System.out.print( " currmove " + rootMoves.get( i ) );
+                System.out.println( " currmovenumber " + ( i + 1 ) );
+
+                visitedNodes++;
+
+                //receive new currline
+                rootMoves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1 );
+
+                //take -score of new currline
+                int score = -rootMoves.get( i ).next.score;
+                rootMoves.get( i ).score = score;
+
+                if ( score > alpha ) {
+
+                    alpha = score;
+                    bestMove = rootMoves.get( i );
+
+                }
+
+                System.out.print( "info" );
+                System.out.print( " nodes " + visitedNodes );
+
+                if ( Math.abs( alpha ) > 100000 ) {
+
+                    System.out.print( " score mate " + ( VALUE_MATE - Math.abs( alpha ) ) );
+
+                } else {
+
+                    System.out.print( " score cp " + alpha );
+
+                }
+
+                System.out.println( " pv " + bestMove.getLine() );
+
+                board.unmakeMove( rootMoves.get( i ) );
+                
+                if( !timeOver() ){
+                    
+                    Collections.sort( rootMoves, HIGH_LOW_SCORE );
+                    break;
+                    
+                }
 
             } else {
 
-                System.out.print( " score cp " + bestMove.score );
-
+                board.unmakeMove( rootMoves.get( i ) );
+                
+                if( !timeOver() ){
+                    
+                    break;
+                    
+                }
+                
             }
             
-            System.out.println( " pv " + bestMove.getLine() );
-            
-            System.out.println( "bestmove " + bestMove );
-
-        //} else {
-
-        //    System.out.println( "pv is empty" );
-
-        //}
+        }
 
         return bestMove;
 
     }
     
-    Move alphaBeta( int alpha, int beta, int depthLeft, Move bestMove ){        
+    Move alphaBeta( int alpha, int beta, int depthLeft ){        
+        
+        Move bestMove = new Move();
         
         if( depthLeft == 0 ){
             
@@ -110,7 +226,7 @@ public class Engine{
         boolean noLegalMoves = true;
         Move currLine;
         
-        for( int i = 0; i < numberOfMoves; i++ ){    
+        for( int i = 0; i < numberOfMoves; i++ ){ 
             
             board.makeMove( moves.get( i ) );
             
@@ -120,17 +236,6 @@ public class Engine{
             //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
             if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {
 
-                if ( depthLeft == MAX_DEPTH_SEARCH ) {
-
-                    System.out.print( "info" );
-                    System.out.print( " nodes " + visitedNodes );
-                    System.out.print( " currmove " + moves.get( i ) );
-                    System.out.println( " currmovenumber " + currentMoveNumber );
-
-                    currentMoveNumber++;
-
-                }
-
                 visitedNodes++;
 
                 noLegalMoves = false;
@@ -139,25 +244,24 @@ public class Engine{
                 currLine = bestMove.next;
 
                 //receive new currline
-                bestMove.next = alphaBeta( -beta, -alpha, depthLeft - 1, new Move() );
+                moves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1 );
 
                 //take -score of new currline
-                int score = -bestMove.next.score;
+                int score = -moves.get( i ).next.score;
+                moves.get( i ).score = score;
                 
                 if ( score >= beta ) {
 
                     board.unmakeMove( moves.get( i ) );
-                    bestMove.score = beta;
+                    moves.get( i ).score = beta;
                     
-                    return bestMove;
+                    return moves.get( i );
 
                 }
 
                 if ( score > alpha ) {
 
                     alpha = score;
-                    moves.get( i ).next = bestMove.next;
-                    moves.get( i ).score = score;
                     bestMove = moves.get( i );
                                         
                 } else {

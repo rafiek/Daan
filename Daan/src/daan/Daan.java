@@ -23,13 +23,13 @@ public class Daan {
      */
     public static void main(String[] args)
     {
-        //Engine engine = new Engine("8/8/1KbB4/Q1p5/2R2n2/r1q1k3/1P2N3/8 w - - 0 1");
+        //Engine engine = new Engine("3Q4/p3b1k1/2p2rPp/2q5/4B3/P2P4/7P/6RK w - -");
         //System.out.println( engine.board.generateMoves() );
         Engine engine = null;
         //engine = new Engine();
         //engine.start_perft();
         //System.out.println( engine.board );
-        //engine.search(5);
+        //engine.search( MAX_DEPTH_SEARCH );
         
         //engine = new Engine();
         //engine.start_perft();
@@ -96,7 +96,20 @@ public class Daan {
             
             if(command.indexOf("go") > -1){
                 
-                engine.search( MAX_DEPTH_SEARCH );
+                long wtime = 0;
+                long btime = 0;
+                
+                if( command.indexOf( "wtime" ) > -1){
+                    String time = command.substring( command.indexOf( "wtime" ) + "wtime".length()+1 );
+                    wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                }
+                
+                if( command.indexOf( "btime" ) > -1){
+                    String time = command.substring( command.indexOf( "btime" ) + "btime".length()+1 );
+                    btime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                }
+                
+                engine.search( MAX_DEPTH_SEARCH, wtime, btime );
                 
             }
         }

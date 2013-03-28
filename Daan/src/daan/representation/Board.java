@@ -5,6 +5,7 @@
 package daan.representation;
 
 import static daan.utils.Constants.*;
+import daan.utils.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -246,19 +247,10 @@ public class Board{
         fen.append(' ');
         
         fen.append( 
-                enPassant < 0 ? '-' : ((String)getKeyByValue(SQUARE_INDEX_MAPPINGS, enPassant))
+                enPassant < 0 ? '-' : ((String)Utils.getKeyByValue(SQUARE_INDEX_MAPPINGS, enPassant))
                 );
         
         return fen.toString();
-    }
-    
-    public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
-        for (Entry<T, E> entry : map.entrySet()) {
-            if (value.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
     }
     
     public List filterQuiescenceMoves( List<Move> moves ){
@@ -285,7 +277,11 @@ public class Board{
                 
                 quiescenceMoves.add( move );
                 
-            } 
+            } else if ( ( move.type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
+                
+                quiescenceMoves.add( move );
+                
+            }
             
         }
                 
@@ -336,7 +332,15 @@ public class Board{
 
         }
         
-        Collections.sort( moves, MVV_LVA_ORDER );
+//        int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+//        
+//        if( isAttacked( -sideToMove, kingPosition ) ){
+//            
+//            moves = filterOutOfCheckMoves( moves );
+//            
+//        }
+        
+        Collections.sort( moves, HIGH_LOW_SCORE );
 
         return moves;
 
@@ -753,7 +757,7 @@ public class Board{
     
     public void makeMove( Move move ){
         
-        if ( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) == null ) {
+        if ( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) == null ) {
             System.out.println( move.pieceFrom );
             System.out.println( move.from );
             System.out.println( move.to );
@@ -796,7 +800,7 @@ public class Board{
         } 
         
         //update castle flags if king or rook has moved
-        switch( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.from ) ){
+        switch( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, move.from ) ){
             case "h1": castlingAvailability &= ~CAW_KING_SIDE;                  break;
             case "e1": castlingAvailability &= ~(CAW_KING_SIDE|CAW_QUEEN_SIDE); break;
             case "a1": castlingAvailability &= ~CAW_QUEEN_SIDE;                 break;
@@ -805,7 +809,7 @@ public class Board{
             case "a8": castlingAvailability &= ~CAB_QUEEN_SIDE;                 break;
         }
         
-        switch( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ){
+        switch( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ){
             case "h1": castlingAvailability &= ~CAW_KING_SIDE;                  break;
             case "e1": castlingAvailability &= ~(CAW_KING_SIDE|CAW_QUEEN_SIDE); break;
             case "a1": castlingAvailability &= ~CAW_QUEEN_SIDE;                 break;
@@ -817,7 +821,7 @@ public class Board{
         //when move is castle, then also move rook 
         if ( ( move.type & MOVE_TYPE_CASTLE ) == MOVE_TYPE_CASTLE ) {
             
-            switch ( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ) {
+            switch ( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ) {
                 
                 case "g1":
                     clearSquare( SQUARE_INDEX_MAPPINGS.get( "h1" ) );
@@ -904,7 +908,7 @@ public class Board{
                 
         if( move.type == MOVE_TYPE_CASTLE ){
             
-            switch( getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ){
+            switch( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, move.to ) ){
                 
                 case "g1":
                     clearSquare( SQUARE_INDEX_MAPPINGS.get( "f1" ) );
@@ -1031,11 +1035,11 @@ public class Board{
         return false;
     }
     
-    private int getRank( int square ){
+    public static int getRank( int square ){
         return ( square >> 4 );
     }
     
-    private int getFile( int square ){
+    public static int getFile( int square ){
         return ( square & 7 );
     }
     
@@ -1360,6 +1364,28 @@ public class Board{
             
         }
         
+    }
+
+    private List<Move> filterOutOfCheckMoves( List<Move> moves ) {
+        
+        int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
+        List<Integer> attackers = findAttackers( -sideToMove, kingPosition );
+        
+        for(Move move : moves){
+        
+            //if KING move, continue
+            //else if CAPTURE ATTACKER, continue
+            //else if ATTACKER is ray piece AND move blocks attacker, continue
+            //else REMOVE move
+            
+        }
+        
+        return moves;
+        
+    }
+
+    private List<Integer> findAttackers( int byColor, int kingPosition ) {
+        return null;
     }
     
 }

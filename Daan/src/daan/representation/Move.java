@@ -6,6 +6,8 @@
 package daan.representation;
 
 import static daan.utils.Constants.*;
+import daan.utils.Utils;
+import javax.rmi.CORBA.Util;
 
 /**
  *
@@ -82,8 +84,8 @@ public class Move {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         
-        sb.append( Board.getKeyByValue( SQUARE_INDEX_MAPPINGS, from ) ); 
-        sb.append( Board.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
+        sb.append( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, from ) ); 
+        sb.append( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
         
         if ( ( this.type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ) {
 
@@ -105,6 +107,48 @@ public class Move {
             }
 
         }
+        return sb.toString();
+    }
+    
+    public String toShortAlgebraicNotation(){
+        StringBuilder sb = new StringBuilder();
+        
+        if( Math.abs( pieceFrom ) == W_PAWN ){
+            
+            if( ( type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
+                
+                sb.append( 'a' + Board.getFile( from ) ) ;
+                sb.append( 'x' );
+                sb.append( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
+                
+            } else {
+                
+                sb.append( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
+                
+            }
+            
+            if( ( type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
+            
+                sb.append( Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, Math.abs( pieceTo ) ) );
+            
+            }
+            
+        } else {
+            
+            char piece = (Character)Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, Math.abs( pieceFrom ) );
+            
+            sb.append( piece );
+            
+            if( ( type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
+                
+                sb.append( 'x' );
+                
+            }
+            
+            sb.append( Utils.getKeyByValue( SQUARE_INDEX_MAPPINGS, to ) );
+            
+        }
+        
         return sb.toString();
     }
     

@@ -140,9 +140,10 @@ public interface Constants {
     public static final int START_VALUE_ALPHA   = -10000000;
     public static final int START_VALUE_BETA    = 10000000;
     
-    public static final int MAX_DEPTH_SEARCH    = 5;
+    public static final int MAX_DEPTH_SEARCH    = 6;
+    public static int ASPIRATION = 50;
     
-    public static final Comparator<Move> MVV_LVA_ORDER = 
+    public static final Comparator<Move> HIGH_LOW_SCORE = 
             new Comparator<Move>(){
                 @Override
                 public int compare( Move m1, Move m2 ){
