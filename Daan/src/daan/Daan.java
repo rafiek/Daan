@@ -104,9 +104,13 @@ public class Daan {
                     wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
                 }
                 
-                if( command.indexOf( "btime" ) > -1){
-                    String time = command.substring( command.indexOf( "btime" ) + "btime".length()+1 );
-                    btime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                if ( command.indexOf( "btime" ) > -1 ) {
+                    String time = command.substring( command.indexOf( "btime" ) + "btime".length() + 1 );
+                    if ( time.indexOf( " " ) > -1 ) {
+                        btime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                    } else {
+                        btime = Long.parseLong( time );
+                    }
                 }
                 
                 engine.search( MAX_DEPTH_SEARCH, wtime, btime );

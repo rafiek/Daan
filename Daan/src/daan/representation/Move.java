@@ -7,7 +7,7 @@ package daan.representation;
 
 import static daan.utils.Constants.*;
 import daan.utils.Utils;
-import javax.rmi.CORBA.Util;
+import java.util.Objects;
 
 /**
  *
@@ -108,6 +108,50 @@ public class Move {
 
         }
         return sb.toString();
+    }
+    
+    @Override
+    public boolean equals( Object obj ){
+        
+        if( obj == this ){
+            return true;
+        }
+        
+        if( obj == null || obj.getClass() != this.getClass() ){
+            return false;
+        }
+        
+        Move move = ( Move ) obj;
+        
+        return
+                this.pieceFrom          == move.pieceFrom           &&
+                this.from               == move.from                &&
+                this.to                 == move.to                  &&
+                this.pieceTo            == move.pieceTo             &&
+                this.capture            == move.capture             &&
+                this.type               == move.type                &&
+                this.castleAvailability == move.castleAvailability  &&
+                this.halfMoveClock      == move.halfMoveClock       &&
+                this.enPassant          == move.enPassant           &&  
+                this.score              == move.score;
+        
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.pieceFrom;
+        hash = 79 * hash + this.from;
+        hash = 79 * hash + this.to;
+        hash = 79 * hash + this.pieceTo;
+        hash = 79 * hash + this.capture;
+        hash = 79 * hash + this.type;
+        hash = 79 * hash + this.castleAvailability;
+        hash = 79 * hash + this.halfMoveClock;
+        hash = 79 * hash + this.enPassant;
+        hash = 79 * hash + this.score;
+        hash = 79 * hash + Objects.hashCode( this.next );
+        return hash;
     }
     
     public String toShortAlgebraicNotation(){

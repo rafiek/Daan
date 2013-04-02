@@ -7,7 +7,6 @@ package daan.ai;
 
 import daan.representation.Board;
 import daan.representation.Move;
-import daan.utils.Constants.*;
 import static daan.utils.Constants.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -77,11 +76,11 @@ public class Engine{
         
         if( board.sideToMove == WHITE ){
           
-            maxThinkingTime = wtime / board.locationOfWhitePieces.size();
+            maxThinkingTime = wtime / (board.locationOfWhitePieces.size() );
             
         } else {
             
-            maxThinkingTime = btime / board.locationOfBlackPieces.size();
+            maxThinkingTime = btime / (board.locationOfBlackPieces.size() );
             
         }
         
@@ -93,9 +92,15 @@ public class Engine{
         
         Move bestMove = searchRoot( START_VALUE_ALPHA, START_VALUE_BETA, depth );
         
+        if( rootMoves.isEmpty() ){ //no legal moves, mate or stalemate
+            
+            return bestMove;
+            
+        }
+        
         Collections.sort( rootMoves, HIGH_LOW_SCORE );                
         
-        for( depth = 2; depth<=maxDepth; depth++){
+        for( depth = 2; depth <= maxDepth; depth++){
             
             if( !timeOver() ){
                 
@@ -107,24 +112,6 @@ public class Engine{
             Collections.sort( rootMoves, HIGH_LOW_SCORE );    
             
         }
-        
-        System.out.print( "info" );
-        System.out.print( " nodes " + visitedNodes );
-
-        if ( Math.abs( bestMove.score ) > 100000 ) {
-
-            int mateDistance = VALUE_MATE - Math.abs( bestMove.score );
-
-            //using a hack to print the correct amount of moves, should fix this in the search
-            System.out.print( " score mate " + mateDistance );
-
-        } else {
-
-            System.out.print( " score cp " + bestMove.score );
-
-        }
-
-        System.out.println( " pv " + bestMove.getLine() );
 
         System.out.println( "bestmove " + bestMove );
 
@@ -136,6 +123,12 @@ public class Engine{
 
         visitedNodes = 0;
         Move bestMove = rootMoves.get( 0 );
+        
+        if( board.isAttacked( -board.sideToMove, ( board.sideToMove == WHITE ) ? board.whiteKingPosition : board.blackKingPosition ) ){
+            
+            depthLeft++;
+            
+        }
         
         for ( int i = 0; i < rootMoves.size(); i++ ) {
 
@@ -155,7 +148,7 @@ public class Engine{
                 visitedNodes++;
 
                 //receive new currline
-                rootMoves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1 );
+                rootMoves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1, rootMoves.get( i ).next );
 
                 //take -score of new currline
                 int score = -rootMoves.get( i ).next.score;
@@ -187,7 +180,6 @@ public class Engine{
                 
                 if( !timeOver() ){
                     
-                    Collections.sort( rootMoves, HIGH_LOW_SCORE );
                     break;
                     
                 }
@@ -195,6 +187,8 @@ public class Engine{
             } else {
 
                 board.unmakeMove( rootMoves.get( i ) );
+                rootMoves.remove( i );
+                i--;
                 
                 if( !timeOver() ){
                     
@@ -210,9 +204,23 @@ public class Engine{
 
     }
     
-    Move alphaBeta( int alpha, int beta, int depthLeft ){        
+    Move alphaBeta( int alpha, int beta, int depthLeft, Move pvMove ){        
         
         Move bestMove = new Move();
+        
+        if( !timeOver() ){
+        
+            bestMove.score = board.evaluate( depthLeft );
+            return bestMove;
+            
+        }        
+        
+        
+        if( board.isAttacked( -board.sideToMove, ( board.sideToMove == WHITE ) ? board.whiteKingPosition : board.blackKingPosition ) ){
+            
+            depthLeft++;
+            
+        }
         
         if( depthLeft == 0 ){
             
@@ -221,7 +229,21 @@ public class Engine{
             
         }
         
-        List<Move> moves = board.generateMoves();        
+        List<Move> moves = board.generateMoves();  
+        
+        if( pvMove != null ){            
+            
+            int swapIndex = moves.indexOf( pvMove );
+            
+            if( swapIndex > 0 ){
+                
+                moves.set( swapIndex, moves.get( 0 ) );
+                moves.set( 0, pvMove );
+                
+            }
+            
+        } 
+        
         int numberOfMoves = moves.size();
         boolean noLegalMoves = true;
         Move currLine;
@@ -244,7 +266,7 @@ public class Engine{
                 currLine = bestMove.next;
 
                 //receive new currline
-                moves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1 );
+                moves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1, moves.get( i ).next );
 
                 //take -score of new currline
                 int score = -moves.get( i ).next.score;
@@ -269,25 +291,6 @@ public class Engine{
                     bestMove.next = currLine;
                     bestMove.score = score;
                     
-                }
-                
-                if ( depthLeft == MAX_DEPTH_SEARCH ) {
-
-                    System.out.print( "info" );
-                    System.out.print( " nodes " + visitedNodes );
-                    
-                    if( Math.abs( alpha ) > 100000 ){
-                        
-                        System.out.print( " score mate " + ( VALUE_MATE - Math.abs( alpha ) ) );  
-                        
-                    } else {
-                        
-                        System.out.print( " score cp " + alpha );
-                        
-                    }
-                    
-                    System.out.println( " pv " + bestMove.getLine() );
-
                 }
 
             }

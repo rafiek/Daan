@@ -118,7 +118,7 @@ public class WAC implements Benchmark{
             
             engine = new Engine( epd.substring( 0, endIndex - 1 ) );
             long time = System.nanoTime();
-            Move bestMove = engine.search( Constants.MAX_DEPTH_SEARCH, Long.MAX_VALUE, Long.MAX_VALUE );
+            Move bestMove = engine.search( Constants.MAX_DEPTH_SEARCH, 300000, 300000 );
             
             try {
                 
