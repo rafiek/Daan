@@ -76,15 +76,17 @@ public class Engine{
         
         if( board.sideToMove == WHITE ){
           
-            maxThinkingTime = wtime / (board.locationOfWhitePieces.size() );
+            maxThinkingTime = wtime / ( board.valueMaterialWhite / 100 + 1 );
             
         } else {
             
-            maxThinkingTime = btime / (board.locationOfBlackPieces.size() );
-            
+            maxThinkingTime = btime / ( board.valueMaterialBlack / 100 + 1 );
+             
         }
         
         int depth = 1;
+        int lowerBound;
+        int upperBound;
         
         startTime = System.currentTimeMillis();
         
@@ -102,13 +104,27 @@ public class Engine{
         
         for( depth = 2; depth <= maxDepth; depth++){
             
-            if( !timeOver() ){
+            lowerBound = bestMove.score - ASPIRATION;
+            upperBound = bestMove.score + ASPIRATION;            
+            
+            bestMove = searchRoot( lowerBound, upperBound, depth );
+            
+            if( bestMove.score <= lowerBound ){ //fail low, nothing improved alpha (All-node)
+                
+                bestMove = searchRoot( bestMove.score - ( 2 * ASPIRATION ), upperBound, depth );
+                
+            } else if( bestMove.score >= upperBound ){ //fail high, (Cut-node) 
+                
+                bestMove = searchRoot( lowerBound, bestMove.score + ( 2 * ASPIRATION ), depth );
+                
+            }
+            
+             if( !timeOver() ){
                 
                 break;
                 
             }
             
-            bestMove = searchRoot( START_VALUE_ALPHA, START_VALUE_BETA, depth );
             Collections.sort( rootMoves, HIGH_LOW_SCORE );    
             
         }
@@ -140,28 +156,40 @@ public class Engine{
             //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
             if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {
 
-                System.out.print( "info" );
-                System.out.print( " nodes " + visitedNodes );
-                System.out.print( " currmove " + rootMoves.get( i ) );
-                System.out.println( " currmovenumber " + ( i + 1 ) );
-
                 visitedNodes++;
-
-                //receive new currline
+                
                 rootMoves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1, rootMoves.get( i ).next );
+                
+                if ( !timeOver() ) {
+
+                    break;
+
+                }
 
                 //take -score of new currline
                 int score = -rootMoves.get( i ).next.score;
                 rootMoves.get( i ).score = score;
-
+                
                 if ( score > alpha ) {
 
-                    alpha = score;
                     bestMove = rootMoves.get( i );
+                    
+                    if( score >= beta ){
+                        
+                        //save move??
+                        
+                    } else {
+                        
+                        alpha = score;
+                        
+                    }
 
                 }
-
+                
                 System.out.print( "info" );
+                System.out.print( " currmove " + rootMoves.get( i ) );
+                System.out.print( " currmovenumber " + ( i + 1 ) );
+
                 System.out.print( " nodes " + visitedNodes );
 
                 if ( Math.abs( alpha ) > 100000 ) {
@@ -177,12 +205,6 @@ public class Engine{
                 System.out.println( " pv " + bestMove.getLine() );
 
                 board.unmakeMove( rootMoves.get( i ) );
-                
-                if( !timeOver() ){
-                    
-                    break;
-                    
-                }
 
             } else {
 
@@ -207,14 +229,6 @@ public class Engine{
     Move alphaBeta( int alpha, int beta, int depthLeft, Move pvMove ){        
         
         Move bestMove = new Move();
-        
-        if( !timeOver() ){
-        
-            bestMove.score = board.evaluate( depthLeft );
-            return bestMove;
-            
-        }        
-        
         
         if( board.isAttacked( -board.sideToMove, ( board.sideToMove == WHITE ) ? board.whiteKingPosition : board.blackKingPosition ) ){
             
@@ -246,7 +260,7 @@ public class Engine{
         
         int numberOfMoves = moves.size();
         boolean noLegalMoves = true;
-        Move currLine;
+        Move prevLine;
         
         for( int i = 0; i < numberOfMoves; i++ ){ 
             
@@ -262,13 +276,19 @@ public class Engine{
 
                 noLegalMoves = false;
                 
-                //backup currline
-                currLine = bestMove.next;
+                //backup previous line
+                prevLine = bestMove.next;
 
-                //receive new currline
+                //receive new line for evaluation
                 moves.get( i ).next = alphaBeta( -beta, -alpha, depthLeft - 1, moves.get( i ).next );
+                
+                if ( !timeOver() ) {
 
-                //take -score of new currline
+                    return bestMove;
+
+                }
+
+                //take -score of new line
                 int score = -moves.get( i ).next.score;
                 moves.get( i ).score = score;
                 
@@ -288,7 +308,7 @@ public class Engine{
                                         
                 } else {
                     
-                    bestMove.next = currLine;
+                    bestMove.next = prevLine;
                     bestMove.score = score;
                     
                 }
@@ -385,8 +405,17 @@ public class Engine{
             alpha = standPat;
 
         }
+        
+        List<Move> moves = board.generateMoves();
 
-        List<Move> moves = board.filterQuiescenceMoves( board.generateMoves() );
+        int kingPosition = ( board.sideToMove == WHITE ) ? board.whiteKingPosition : board.blackKingPosition;
+        
+        if( !board.isAttacked( -board.sideToMove, kingPosition ) ){
+                                    
+            moves = board.filterQuiescenceMoves( moves );
+            
+        }
+        
         int numberOfMoves = moves.size();
 
         for ( int i = 0; i < numberOfMoves; i++ ) {
@@ -394,7 +423,7 @@ public class Engine{
             board.makeMove( moves.get( i ) );
 
             //find position of king of the side that just moved
-            int kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
+            kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
 
             //if after making a move and the king of the side that made the move is NOT in check, then it's a legal move
             if ( !board.isAttacked( board.sideToMove, kingPosition ) ) {

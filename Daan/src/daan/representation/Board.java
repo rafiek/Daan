@@ -51,9 +51,9 @@ public class Board {
 
     public int blackKingPosition;
 
-    private int valueMaterialWhite;
+    public int valueMaterialWhite;
 
-    private int valueMaterialBlack;
+    public int valueMaterialBlack;
 
     private int valuePieceSquareWhite;
 

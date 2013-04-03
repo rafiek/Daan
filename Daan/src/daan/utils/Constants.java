@@ -141,7 +141,7 @@ public interface Constants {
     public static final int START_VALUE_BETA    = 10000000;
     
     public static final int MAX_DEPTH_SEARCH    = 64;
-    public static int ASPIRATION = 100;
+    public static int ASPIRATION = 50;
     
     public static final Comparator<Move> HIGH_LOW_SCORE = 
             new Comparator<Move>(){
