@@ -1,1 +1,1 @@
-java.exe -jar dist\Daan.jar
+java -Xmx1024M -jar dist\Daan.jar

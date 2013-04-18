@@ -40,6 +40,6 @@ public class BoardTest {
     public void testPromotion() {
         Board b = new Board("8/1P6/8/8/8/8/8/8 w - - 0 1");
         // TODO review the generated test code and remove the default call to fail.
-        System.out.println(b.generateMoves());
+        System.out.println(b.generatePseudoMoves());
     }
 }

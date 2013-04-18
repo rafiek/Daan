@@ -26,10 +26,10 @@ public class Daan {
         //Engine engine = new Engine("3Q4/p3b1k1/2p2rPp/2q5/4B3/P2P4/7P/6RK w - -");
         //System.out.println( engine.board.generateMoves() );
         Engine engine = null;
-        //engine = new Engine();
+        //engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
         //engine.start_perft();
         //System.out.println( engine.board );
-        //engine.search( MAX_DEPTH_SEARCH );
+        //engine.search( MAX_DEPTH_SEARCH, 30000000, 30000000 );
         
         //engine = new Engine();
         //engine.start_perft();
@@ -99,9 +99,18 @@ public class Daan {
                 long wtime = 0;
                 long btime = 0;
                 
-                if( command.indexOf( "wtime" ) > -1){
-                    String time = command.substring( command.indexOf( "wtime" ) + "wtime".length()+1 );
+                 if( command.indexOf( "movetime" ) > -1){
+                    String time = command.substring( command.indexOf( "movetime" ) + "movetime".length()+1 );
+                    long moveTime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                    
+                    engine.setMaxThinkingTime( moveTime );
+                    
+                }                
+                
+                if ( command.indexOf( "wtime" ) > -1 ) {
+                    String time = command.substring( command.indexOf( "wtime" ) + "wtime".length() + 1 );
                     wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
+                    engine.setWhiteTime( wtime );
                 }
                 
                 if ( command.indexOf( "btime" ) > -1 ) {
@@ -111,9 +120,12 @@ public class Daan {
                     } else {
                         btime = Long.parseLong( time );
                     }
+
+                    engine.setBlackTime( wtime );
+                                       
                 }
                 
-                engine.search( MAX_DEPTH_SEARCH, wtime, btime );
+                engine.search( MAX_DEPTH_SEARCH );
                 
             }
         }

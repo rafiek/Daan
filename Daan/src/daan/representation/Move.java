@@ -7,14 +7,13 @@ package daan.representation;
 
 import static daan.utils.Constants.*;
 import daan.utils.Utils;
-import java.util.Objects;
 
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  * created 20-feb-2013, 14:18:05
  */
-public class Move {
+public class Move implements Comparable<Move>{
     
     public int pieceFrom;
     public int from;
@@ -38,8 +37,8 @@ public class Move {
         this.type               = 0;
         this.castleAvailability = 0;
         this.halfMoveClock      = 0;
-        this.enPassant          = 0;        
-        this.score              = 0;
+        this.enPassant          = -1;        
+        this.score              = START_VALUE_ALPHA;
         
     }
     
@@ -54,7 +53,7 @@ public class Move {
         this.castleAvailability = castleAvailability;
         this.halfMoveClock      = halfMoveClock;
         this.enPassant          = enPassant;        
-        this.score              = calculateMVVLVAScore();
+        this.score              = 0;
         
     }
     
@@ -124,33 +123,18 @@ public class Move {
         Move move = ( Move ) obj;
         
         return
-                this.pieceFrom          == move.pieceFrom           &&
                 this.from               == move.from                &&
                 this.to                 == move.to                  &&
-                this.pieceTo            == move.pieceTo             &&
-                this.capture            == move.capture             &&
-                this.type               == move.type                &&
-                this.castleAvailability == move.castleAvailability  &&
-                this.halfMoveClock      == move.halfMoveClock       &&
-                this.enPassant          == move.enPassant           &&  
-                this.score              == move.score;
+                this.pieceTo            == move.pieceTo;
         
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + this.pieceFrom;
         hash = 79 * hash + this.from;
         hash = 79 * hash + this.to;
         hash = 79 * hash + this.pieceTo;
-        hash = 79 * hash + this.capture;
-        hash = 79 * hash + this.type;
-        hash = 79 * hash + this.castleAvailability;
-        hash = 79 * hash + this.halfMoveClock;
-        hash = 79 * hash + this.enPassant;
-        hash = 79 * hash + this.score;
-        hash = 79 * hash + Objects.hashCode( this.next );
         return hash;
     }
     
@@ -196,13 +180,20 @@ public class Move {
         return sb.toString();
     }
     
-    private int calculateMVVLVAScore(){
+    public int calculateMVVLVAScore(){
         
-        int result = ( capture != EMPTY_SQUARE ) ? PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) ) : 0;
+        int result = ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceTo ) ) / 100 );
         
-        if( result > 0 ){
+        if( capture != EMPTY_SQUARE ){
             
+            result += PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) );
             result += 100 - ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceFrom ) ) / 10 );
+            
+        }
+        
+        if( ( type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
+            
+            result += ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceTo ) ) / 100 );
             
         }
         
@@ -212,20 +203,15 @@ public class Move {
     
     public String getLine() {
         
-        Move tmp = this;
-        StringBuilder sb = new StringBuilder();
+        return this.toString() + ( ( this.next == null ) ? "" : " " + this.next.getLine() ) ;
         
-        do{
-            
-            sb.append( tmp );           
-            sb.append( " " );
-            tmp = tmp.next;
-            
-        } while( tmp.pieceFrom != 0 );
-            
-        
-        return sb.toString();
-        
+    }
+
+    @Override
+    public int compareTo( Move other ) {
+
+        return ( other.score * 10000 + other.calculateMVVLVAScore() ) - ( this.score * 10000 + this.calculateMVVLVAScore() );
+
     }
 
 }
