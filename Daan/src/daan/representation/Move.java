@@ -37,7 +37,7 @@ public class Move implements Comparable<Move>{
         this.type               = 0;
         this.castleAvailability = 0;
         this.halfMoveClock      = 0;
-        this.enPassant          = -1;        
+        this.enPassant          = -100;        
         this.score              = START_VALUE_ALPHA;
         
     }
@@ -210,7 +210,15 @@ public class Move implements Comparable<Move>{
     @Override
     public int compareTo( Move other ) {
 
-        return ( other.score * 10000 + other.calculateMVVLVAScore() ) - ( this.score * 10000 + this.calculateMVVLVAScore() );
+        if ( other.score == this.score ) {
+            
+            return other.calculateMVVLVAScore() - this.calculateMVVLVAScore();
+            
+        } else {
+            
+            return other.score - this.score;
+            
+        }
 
     }
 

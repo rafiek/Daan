@@ -30,19 +30,19 @@ public interface Constants {
     public static final int VALUE_MATE      = 1000000;
     public static final int VALUE_DRAW      = 0;
     
-    public static final int W_KING      = 1;
-    public static final int W_QUEEN     = 2;
-    public static final int W_ROOK      = 3;
-    public static final int W_BISHOP    = 4;
-    public static final int W_KNIGHT    = 5;
-    public static final int W_PAWN      = 6;
+    public static final int W_KING      = 64;
+    public static final int W_QUEEN     = 32;
+    public static final int W_ROOK      = 16;
+    public static final int W_BISHOP    = 8;
+    public static final int W_KNIGHT    = 4;
+    public static final int W_PAWN      = 2;
     
-    public static final int B_KING      = -1;
-    public static final int B_QUEEN     = -2; 
-    public static final int B_ROOK      = -3;
-    public static final int B_BISHOP    = -4;
-    public static final int B_KNIGHT    = -5;
-    public static final int B_PAWN      = -6;    
+    public static final int B_KING      = -64;
+    public static final int B_QUEEN     = -32; 
+    public static final int B_ROOK      = -16;
+    public static final int B_BISHOP    = -8;
+    public static final int B_KNIGHT    = -4;
+    public static final int B_PAWN      = -1;    
     
     public static final int CAW_KING_SIDE     = 1; //castling availability white king side
     public static final int CAW_QUEEN_SIDE    = 2;
@@ -58,7 +58,26 @@ public interface Constants {
     public static final int NE      = 17;
     public static final int SW      = -17;
     public static final int NW      = 15;
-    public static final int SE      = -15;    
+    public static final int SE      = -15;   
+    
+    public final int ATTACK_TABLE_SIZE = 239;
+    public static int[] ATTACK_TABLE = new int[ ATTACK_TABLE_SIZE ];
+    
+    public static final int INDEX_KING_DIRECTION = 0;
+    public static final int INDEX_QUEEN_DIRECTION = 1;
+    public static final int INDEX_ROOK_DIRECTION = 2;
+    public static final int INDEX_BISHOP_DIRECTION = 3;
+    public static final int INDEX_KNIGHT_DIRECTION = 4;
+
+    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N  
+
+    public final static int[][] PIECE_VECTORS = {//K, Q, R, B, N
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
+        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
+        { SOUTH, WEST, EAST, NORTH },
+        { SW, SE, NW, NE },
+        { -33, -31, -18, -14, 14, 18, 31, 33 }
+    };
    
     public static final String FEN_START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     
@@ -108,7 +127,8 @@ public interface Constants {
                             put( W_ROOK     , VALUE_ROOK      );
                             put( W_BISHOP   , VALUE_BISHOP    );
                             put( W_KNIGHT   , VALUE_KNIGHT    );
-                            put( W_PAWN     , VALUE_PAWN      );                            
+                            put( W_PAWN     , VALUE_PAWN      );
+                            put( -B_PAWN    , VALUE_PAWN      );
                             put( W_KING     , 0             );
                            
                         }
@@ -120,22 +140,6 @@ public interface Constants {
     public static final int MOVE_TYPE_EP        = 2;
     public static final int MOVE_TYPE_CASTLE    = 4;
     public static final int MOVE_TYPE_PROMOTION = 8;
-    
-    public static final int INDEX_KING_DIRECTION = 0;
-    public static final int INDEX_QUEEN_DIRECTION = 1;
-    public static final int INDEX_ROOK_DIRECTION = 2;
-    public static final int INDEX_BISHOP_DIRECTION = 3;
-    public static final int INDEX_KNIGHT_DIRECTION = 4;
-
-    public final static boolean[] SLIDE = { false, true, true, true, false }; //K, Q, R, B, N  
-
-    public final static int[][] PIECE_VECTORS = {//K, Q, R, B, N
-        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
-        { SW, SOUTH, SE, WEST, EAST, NW, NORTH, NE },
-        { SOUTH, WEST, EAST, NORTH },
-        { SW, SE, NW, NE },
-        { -33, -31, -18, -14, 14, 18, 31, 33 }
-    };
 
     public static final int START_VALUE_ALPHA   = -10000000;
     public static final int START_VALUE_BETA    = 10000000;
@@ -273,7 +277,5 @@ public interface Constants {
         -30,-40,-40,-50,-50,-40,-40,-30, 0, 0, 0, 0, 0, 0, 0, 0,
         -30,-40,-40,-50,-50,-40,-40,-30, 0, 0, 0, 0, 0, 0, 0, 0
     };
-    
-    
         
 }

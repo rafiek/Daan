@@ -58,6 +58,10 @@ public class Board {
     private int valuePieceSquareWhite;
 
     private int valuePieceSquareBlack;
+    
+    public int numberOfWhitePawns, numberOfWhiteKnights, numberOfWhiteBishops, numberOfWhiteRooks, numberOfWhiteQueens;
+    
+    public int numberOfBlackPawns, numberOfBlackKnights, numberOfBlackBishops, numberOfBlackRooks, numberOfBlackQueens;    
 
     public Board() {
         initPosition( FEN_START_POSITION );
@@ -73,7 +77,7 @@ public class Board {
         locationOfBlackPieces = new HashMap<>();
         sideToMove = WHITE;
         castlingAvailability = 0;
-        enPassant = -1;
+        enPassant = -100;
         halfMoveClock = 0;
         fullMoveNumber = 1;
         valueMaterialWhite = 0;
@@ -103,15 +107,22 @@ public class Board {
                                 switch ( position[currentPositionIndex] ) {
                                     case W_PAWN:
                                         valuePieceSquareWhite += PIECE_SQUARE_WPAWN[ currentPositionIndex];
+                                        numberOfWhitePawns++;
                                         break;
                                     case W_KNIGHT:
                                         valuePieceSquareWhite += PIECE_SQUARE_WKNIGHT[ currentPositionIndex];
+                                        numberOfWhiteKnights++;
                                         break;
                                     case W_BISHOP:
                                         valuePieceSquareWhite += PIECE_SQUARE_WBISHOP[ currentPositionIndex];
+                                        numberOfWhiteBishops++;
                                         break;
                                     case W_ROOK:
                                         valuePieceSquareWhite += PIECE_SQUARE_WROOK[ currentPositionIndex];
+                                        numberOfWhiteRooks++;
+                                        break;
+                                    case W_QUEEN:
+                                        numberOfWhiteQueens++;
                                         break;
                                 }
 
@@ -122,15 +133,22 @@ public class Board {
                                 switch ( position[currentPositionIndex] ) {
                                     case B_PAWN:
                                         valuePieceSquareBlack += PIECE_SQUARE_BPAWN[ currentPositionIndex];
+                                        numberOfBlackPawns++;
                                         break;
                                     case B_KNIGHT:
                                         valuePieceSquareBlack += PIECE_SQUARE_BKNIGHT[ currentPositionIndex];
+                                        numberOfBlackKnights++;
                                         break;
                                     case B_BISHOP:
                                         valuePieceSquareBlack += PIECE_SQUARE_BBISHOP[ currentPositionIndex];
+                                        numberOfBlackBishops++;
                                         break;
                                     case B_ROOK:
                                         valuePieceSquareBlack += PIECE_SQUARE_BROOK[ currentPositionIndex];
+                                        numberOfBlackRooks++;
+                                        break;
+                                    case B_QUEEN:
+                                        numberOfBlackQueens++;
                                         break;
                                 }
 
@@ -205,7 +223,7 @@ public class Board {
 
                 case 3://enPassant targetSquare
 
-                    enPassant = !( fenArray[i].equals( "-" ) ) ? SQUARE_INDEX_MAPPINGS.get( fenArray[i] ) : -1;
+                    enPassant = !( fenArray[i].equals( "-" ) ) ? SQUARE_INDEX_MAPPINGS.get( fenArray[i] ) : -100;
 
                     break;
 
@@ -383,6 +401,9 @@ public class Board {
                     //System.out.println( "generating pawn moves" );
                     generatePseudoPawnMoves( entry.getKey(), normal );
                     break;
+                case -B_PAWN:
+                    generatePseudoPawnMoves( entry.getKey(), normal );
+                    break;
                 case W_KNIGHT:
                     //System.out.println( "generating knight moves" );
                     generatePseudoKnightMoves( entry.getKey(), normal );
@@ -407,17 +428,35 @@ public class Board {
             }
 
         }
-        
-        Collections.sort( moves, MVV_LVA_SCORE );
 
         return moves;
 
+    }
+    
+    public static Move sortHighestScoringMove( int numberOfMoves, List<Move> moves, int current ){
+        
+        int high = current;
+        
+        for( int i = current + 1; i < numberOfMoves; i++ ){
+            
+            if( moves.get( high ).compareTo( moves.get( i ) ) > 0 ){
+                
+                high = i;
+                
+            }
+            
+        }
+        
+        Collections.swap( moves, current, high );
+        
+        return moves.get( current );
+        
     }
 
     private void generatePseudoPawnMoves( int square, boolean normal ) {
 
         int capture = EMPTY_SQUARE;
-        final int PUSH, DOUBLE_PUSH, CAPTURE_WEST, CAPTURE_EAST, PAWN, QUEEN, ROOK, BISHOP, KNIGHT, BACK_RANK, START_RANK;
+        final int PUSH, DOUBLE_PUSH, CAPTURE_WEST, CAPTURE_EAST, PAWN, CAPTURE_PAWN, QUEEN, ROOK, BISHOP, KNIGHT, BACK_RANK, START_RANK;
         
         if( sideToMove == WHITE ){
             
@@ -426,6 +465,7 @@ public class Board {
             CAPTURE_WEST = NW;
             CAPTURE_EAST = NE;
             PAWN = W_PAWN;
+            CAPTURE_PAWN = B_PAWN;
             QUEEN = W_QUEEN;
             ROOK = W_ROOK;
             BISHOP = W_BISHOP;
@@ -440,6 +480,7 @@ public class Board {
             CAPTURE_WEST = SW;
             CAPTURE_EAST = SE;
             PAWN = B_PAWN;
+            CAPTURE_PAWN = W_PAWN;
             QUEEN = B_QUEEN;
             ROOK = B_ROOK;
             BISHOP = B_BISHOP;
@@ -532,13 +573,13 @@ public class Board {
         //if enpassant is available, then pawn can also take pawn by moving to enpassant square
         if ( ( ( square + CAPTURE_WEST ) == enPassant ) && !offTheBoard( square + CAPTURE_WEST ) ) {
 
-            moves.add( createMove( PAWN, square, square + CAPTURE_WEST, PAWN, MOVE_TYPE_EP, -PAWN ) );
+            moves.add( createMove( PAWN, square, square + CAPTURE_WEST, PAWN, MOVE_TYPE_EP, CAPTURE_PAWN ) );
 
         }
 
         if ( ( ( square + CAPTURE_EAST ) == enPassant ) && !offTheBoard( square + CAPTURE_EAST ) ) {
 
-            moves.add( createMove( PAWN, square, square + CAPTURE_EAST, PAWN, MOVE_TYPE_EP, -PAWN ) );
+            moves.add( createMove( PAWN, square, square + CAPTURE_EAST, PAWN, MOVE_TYPE_EP, CAPTURE_PAWN ) );
 
         }
 
@@ -732,7 +773,7 @@ public class Board {
 
             while ( !offTheBoard( rookMove ) ) {
 
-                if ( position[ rookMove] == EMPTY_SQUARE && normal ) {
+                if ( ( position[ rookMove ] == EMPTY_SQUARE ) && normal ) {
 
                     moves.add( createMove( piece, square, rookMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
                     step++;
@@ -893,9 +934,9 @@ public class Board {
         }
 
         //set enpassant to -1
-        enPassant = -1;
+        enPassant = -100;
 
-        if ( Math.abs( move.pieceFrom ) == W_PAWN && Math.abs( move.from - move.to ) == 32 ) {
+        if ( ( ( move.pieceFrom == W_PAWN ) || ( move.pieceFrom == B_PAWN ) ) && Math.abs( move.from - move.to ) == 32 ) {
 
             enPassant = ( move.from + move.to ) / 2;
 
@@ -1028,9 +1069,42 @@ public class Board {
     }
 
     public boolean isAttacked( int byColor, int square ) {
+        
+        Set<Map.Entry<Integer, Integer>> locationOfPieces = ( byColor == WHITE ) ? locationOfWhitePieces.entrySet() : locationOfBlackPieces.entrySet();
+        
+        //loop through all pieces
+        for ( Map.Entry<Integer, Integer> entry : locationOfPieces ) {
+            
+            int entryAttackTable = 0x77 + ( square - entry.getKey() );
+                
+                //if relation exists for entry.getValue()
+                if( ( Math.abs( entry.getValue() ) & ATTACK_TABLE[ entryAttackTable ] ) == Math.abs( entry.getValue() ) ){
+                    
+                    //if sliding piece
+                    if( isSlidingPiece( entry.getValue() ) ){
+                        
+                        if( clearPath( entry.getKey(), square ) ){
+                            
+                            return true;
+                            
+                        }
+                        
+                    } else {
+                        
+                        return true;
+                        
+                    }
+                    
+                    
+                }                     
+            
+        }
+        
+        return false;
+/*
 
-        //pawns
-        if ( byColor == WHITE ) {
+        //pawns        
+        if ( ( byColor == WHITE ) && ( numberOfWhitePawns > 0 ) ) {
 
             if ( !offTheBoard( square + SW ) ) {
 
@@ -1052,7 +1126,7 @@ public class Board {
 
             }
 
-        } else {
+        } else if( numberOfBlackPawns > 0 ){
 
             if ( !offTheBoard( square + NW ) ) {
 
@@ -1077,8 +1151,10 @@ public class Board {
             }
 
         }
+        
+        
 
-        //knights
+        //knights           
         if ( knightAttack( byColor, square ) ) {
             //System.out.println( "knight attack" );
             return true;
@@ -1107,7 +1183,7 @@ public class Board {
         }
 
 
-        return false;
+        return false; */
     }
 
     public static int getRank( int square ) {
@@ -1131,15 +1207,23 @@ public class Board {
             switch ( position[ square] ) {
                 case W_PAWN:
                     valuePieceSquareWhite -= PIECE_SQUARE_WPAWN[ square ];
+                    numberOfWhitePawns--;
                     break;
                 case W_KNIGHT:
                     valuePieceSquareWhite -= PIECE_SQUARE_WKNIGHT[ square ];
+                    numberOfWhiteKnights--;
                     break;
                 case W_BISHOP:
                     valuePieceSquareWhite -= PIECE_SQUARE_WBISHOP[ square ];
+                    numberOfWhiteBishops--;
                     break;
                 case W_ROOK:
                     valuePieceSquareWhite -= PIECE_SQUARE_WROOK[ square ];
+                    numberOfWhiteRooks--;
+                    break;
+                 case W_QUEEN:
+                    //valuePieceSquareWhite -= PIECE_SQUARE_WROOK[ square ];
+                    numberOfWhiteQueens--;
                     break;
                  case W_KING:
                     valuePieceSquareWhite -= PIECE_SQUARE_WKING[ square ];
@@ -1153,15 +1237,23 @@ public class Board {
             switch ( position[ square] ) {
                 case B_PAWN:
                     valuePieceSquareBlack -= PIECE_SQUARE_BPAWN[ square ];
+                    numberOfBlackPawns--;
                     break;
                 case B_KNIGHT:
                     valuePieceSquareBlack -= PIECE_SQUARE_BKNIGHT[ square ];
+                    numberOfBlackKnights--;
                     break;
                 case B_BISHOP:
                     valuePieceSquareBlack -= PIECE_SQUARE_BBISHOP[ square ];
+                    numberOfBlackBishops--;
                     break;
                 case B_ROOK:
                     valuePieceSquareBlack -= PIECE_SQUARE_BROOK[ square ];
+                    numberOfBlackRooks--;
+                    break;
+                 case B_QUEEN:
+                    //valuePieceSquareBlack -= PIECE_SQUARE_BROOK[ square];
+                    numberOfBlackQueens--;
                     break;
                  case B_KING:
                     valuePieceSquareBlack -= PIECE_SQUARE_BKING[ square ];
@@ -1183,18 +1275,26 @@ public class Board {
             switch ( piece ) {
                 case W_PAWN:
                     valuePieceSquareWhite += PIECE_SQUARE_WPAWN[ square ];
+                    numberOfWhitePawns++;
                     break;
                 case W_KNIGHT:
                     valuePieceSquareWhite += PIECE_SQUARE_WKNIGHT[ square ];
+                    numberOfWhiteKnights++;
                     break;
                 case W_BISHOP:
                     valuePieceSquareWhite += PIECE_SQUARE_WBISHOP[ square ];
+                    numberOfWhiteBishops++;
                     break;
                 case W_ROOK:
                     valuePieceSquareWhite += PIECE_SQUARE_WROOK[ square ];
+                    numberOfWhiteRooks++;
+                    break;
+                case W_QUEEN:
+                    //valuePieceSquareWhite += PIECE_SQUARE_WROOK[ square ];
+                    numberOfWhiteQueens++;
                     break;
                 case W_KING:
-                    valuePieceSquareWhite += PIECE_SQUARE_WKING[ square ];
+                    valuePieceSquareWhite += PIECE_SQUARE_WKING[ square ];                    
                     break;
             }
 
@@ -1205,18 +1305,26 @@ public class Board {
             switch ( piece ) {
                 case B_PAWN:
                     valuePieceSquareBlack += PIECE_SQUARE_BPAWN[ square ];
+                    numberOfBlackPawns++;
                     break;
                 case B_KNIGHT:
                     valuePieceSquareBlack += PIECE_SQUARE_BKNIGHT[ square ];
+                    numberOfBlackKnights++;
                     break;
                 case B_BISHOP:
                     valuePieceSquareBlack += PIECE_SQUARE_BBISHOP[ square ];
+                    numberOfBlackBishops++;
                     break;
                 case B_ROOK:
-                    valuePieceSquareBlack += PIECE_SQUARE_BROOK[ square ];
+                    valuePieceSquareBlack += PIECE_SQUARE_BROOK[ square];
+                    numberOfBlackRooks++;
+                    break;
+                case B_QUEEN:
+                    //valuePieceSquareBlack += PIECE_SQUARE_BROOK[ square];
+                    numberOfBlackQueens++;
                     break;
                 case B_KING:
-                    valuePieceSquareBlack += PIECE_SQUARE_BKING[ square ];
+                    valuePieceSquareBlack += PIECE_SQUARE_BKING[ square];
                     break;
             }
 
@@ -1241,6 +1349,16 @@ public class Board {
     }
 
     private boolean knightAttack( int byColor, int square ) {
+        
+        if( byColor == WHITE && numberOfWhiteKnights <= 0 ){
+            
+            return false;
+            
+        } else if( byColor == BLACK && numberOfBlackKnights <= 0 ){
+            
+            return false;
+            
+        }
 
         int knightMove;
         int knight = ( byColor == WHITE ) ? W_KNIGHT : B_KNIGHT;
@@ -1290,7 +1408,17 @@ public class Board {
 
     }
 
-    private boolean straightAttack( int byColor, int square ) {
+    private boolean straightAttack( int byColor, int square ) { 
+        
+        if( byColor == WHITE && ( numberOfWhiteRooks <= 0 && numberOfWhiteQueens <= 0 ) ){
+            
+            return false;
+            
+        } else if( byColor == BLACK && ( numberOfBlackRooks <= 0 && numberOfBlackQueens <= 0 ) ){
+            
+            return false;
+            
+        }
         
         int sliderMove;
         int queen = ( byColor == WHITE ) ? W_QUEEN : B_QUEEN;
@@ -1332,6 +1460,16 @@ public class Board {
     }
 
     private boolean diagonalAttack( int byColor, int square ) {
+        
+        if( ( byColor == WHITE ) && ( numberOfWhiteBishops <= 0 && numberOfWhiteQueens <= 0 ) ){
+            
+            return false;
+            
+        } else if( ( byColor == BLACK ) && ( numberOfBlackBishops <= 0 && numberOfBlackQueens <= 0 ) ){
+            
+            return false;
+            
+        }
 
         int sliderMove;
         int queen = ( byColor == WHITE ) ? W_QUEEN : B_QUEEN;
@@ -1499,6 +1637,76 @@ public class Board {
 
         }
 
+    }
+
+    private boolean isSlidingPiece( int piece ) {
+        
+        int absPiece = Math.abs( piece );
+        
+        return ( ( absPiece == W_QUEEN ) || ( absPiece == W_ROOK ) || ( absPiece == W_BISHOP ) );
+        
+    }
+
+    private boolean clearPath( int from, int to ) {
+    
+        int distance = to - from;
+        int delta;
+        
+        if( distance % 15 == 0 ){
+            
+            delta = 15; 
+            
+        } else if( distance % 16 == 0 ){
+            
+            delta = 16;
+            
+        } else if( distance % 17 == 0 ){
+            
+            delta = 17;
+            
+        } else {
+            
+            delta = 1;
+            
+        }
+        
+        if( distance < 0 ){
+            
+            delta = -delta;
+            
+        }
+        
+        if( ( from + delta ) == to ){
+            
+            return true;
+            
+        } 
+        
+        int step = 1;
+        
+        while( ( delta * step ) != distance ){
+            
+            if( from + ( delta * step ) > 127 ){
+                
+                System.out.println( from );
+                System.out.println( distance );
+                System.out.println( delta );
+                System.out.println( to );
+                
+            }
+            
+            if( position[ from + ( delta * step ) ] != EMPTY_SQUARE ){
+                
+                return false;
+                
+            }
+            
+            step++;
+            
+        }
+        
+        return true;
+        
     }
 
 }

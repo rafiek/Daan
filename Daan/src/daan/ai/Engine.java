@@ -24,6 +24,8 @@ import java.util.logging.Logger;
  */
 public class Engine{
     
+    private int captures, ep, castles, promotions, checks, checkmates;
+    
     public Board board;
 
     public int visitedNodes;
@@ -135,18 +137,19 @@ public class Engine{
             
             //find the best move with depth 'depth'
             score = searchRoot( lowerBound, upperBound, depth );
+            Collections.sort( rootMoves );    
             
             if( score <= lowerBound ){ //fail low, nothing improved alpha (All-node)
                 
                 score = searchRoot(  START_VALUE_ALPHA, lowerBound + 1, depth );
+                Collections.sort( rootMoves );   
                 
             } else if( score >= upperBound ){ //fail high, (Cut-node) 
                 
                 score = searchRoot( upperBound - 1, START_VALUE_BETA, depth );
+                Collections.sort( rootMoves );   
                 
             }
-            
-            Collections.sort( rootMoves );    
             
             long time = System.currentTimeMillis() - startTime;
             long nps = ( visitedNodes / ( ( time + 1000 ) / 1000 ) );
@@ -179,7 +182,7 @@ public class Engine{
             }
             
         }
-
+        
         System.out.println( "bestmove " + bestMove );
 
         return score;
@@ -187,10 +190,24 @@ public class Engine{
     }
     
     int searchRoot( int alpha, int beta, int ply ) {
+        
+        if ( !timeOver() ) {
+
+            return alpha;
+
+        }
 
         int depthLeft = ply;
         Move currMove;
         int score;
+        
+        int index = rootMoves.indexOf( bestMove );
+            
+        if ( index >= 0 ) {
+
+            Collections.swap( rootMoves, 0, index );
+
+        }
         
         for ( int i = 0; i < rootMoves.size(); i++ ) {
             
@@ -208,7 +225,6 @@ public class Engine{
 
                 score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
                 
-                currMove.score = score;                
                 board.unmakeMove( currMove );
                 
                 if ( !timeOver() ) {
@@ -216,9 +232,11 @@ public class Engine{
                     break;
 
                 }
-   
+                
+                currMove.score = score;   
+                
                 if ( score > alpha ) {
-
+                    
                     if ( score >= beta ) {
 
                         return beta;
@@ -272,7 +290,7 @@ public class Engine{
 
     }
     
-    int alphaBeta( int alpha, int beta, int depthLeft, Move prevBestMove ){    
+    int alphaBeta( int alpha, int beta, int depthLeft, Move prevBestMove ){
         
         if ( !timeOver() ) {
 
@@ -305,16 +323,15 @@ public class Engine{
             
             if( index >= 0 ){
                 
-                moves.remove( index );
-                moves.add( 0, prevBestMove.next );
+                Collections.swap( moves, 0, index );
                    
             }
             
         } 
         
-        for( int i = 0; i < numberOfMoves; i++ ){ 
+        for( int i = 0; i < numberOfMoves; i++ ){
             
-            currMove = moves.get( i );
+            currMove = ( i == 0 ) ? moves.get( 0 ) : Board.sortHighestScoringMove( numberOfMoves, moves, i );
             
             board.makeMove( currMove );
             
@@ -333,12 +350,19 @@ public class Engine{
                 
                 board.unmakeMove( currMove );
                 
+//                 if ( !timeOver() ) {
+//
+//                    break;
+//
+//                }
+                 
+                currMove.score = score;
+                
                 if ( score > alpha ) {
                     
                      if ( score >= beta ) {
                          
-                        alpha = beta; 
-                        break;
+                        return beta;                         
 
                     }
                      
@@ -383,7 +407,11 @@ public class Engine{
         
         for(int i = 1; i <= MAX_DEPTH_SEARCH; i++){            
             
+            captures = 0;
+            ep = 0;
             System.out.println( "depth: "+i+" time: "+twoDForm.format((System.nanoTime()-time) / Math.pow(10, 9))+" nodes: "+perft( i ) );
+            System.out.println( "captures = "+captures );
+            System.out.println( "ep = "+ep );
             
         }
         
@@ -397,21 +425,30 @@ public class Engine{
             return 1;
         }
         
-        List<Move> moves = board.generatePseudoMoves();        
+        List<Move> moves = board.generatePseudoMoves();          
+        //System.out.println( moves );
+        //System.out.println( board );
         int numberOfMoves = moves.size();
                 
         for( int i = 0; i < numberOfMoves; i++ ){
             
             board.makeMove( moves.get( i ) );
+            
             //System.out.println( moves );
             
             int kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
             
             if( !board.isAttacked( board.sideToMove, kingPosition ) ){
                 //System.out.println( "legal move!" );
+                if( ( moves.get( i ).type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
+                    captures++;
+                }
+                if( moves.get( i ).type == MOVE_TYPE_EP ){
+                    ep++;
+                }
                 nodes += perft( depth - 1 );                
                
-            }
+            } 
             
             board.unmakeMove( moves.get( i ) );
            
@@ -460,6 +497,8 @@ public class Engine{
         int numberOfMoves = moves.size();
 
         for ( int i = 0; i < numberOfMoves; i++ ) {
+            
+            Board.sortHighestScoringMove( numberOfMoves, moves, i );
 
             board.makeMove( moves.get( i ) );
 

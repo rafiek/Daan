@@ -8,6 +8,7 @@ package daan.benchmark;
 import daan.ai.Engine;
 import daan.representation.Move;
 import daan.utils.Constants;
+import static daan.utils.Constants.ATTACK_TABLE;
 import daan.utils.Utils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,6 +30,77 @@ import java.util.logging.Logger;
  * created 24-mrt-2013, 10:08:30
  */
 public class WAC implements Benchmark{
+    
+    static {
+        
+        //0x77 offset is used to divide array in first part negative direction and second part positive direction
+                
+        for( int i = 1; i < 120; i++){ //for all distances
+            
+            if( i == 1 ){ //KQR=1, EAST and -EAST=WEST
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b1110000;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b1110000;
+                                
+            } else if( ( i > 1 ) && ( i < 8 ) ){ // QR = multiple of 1 up to 8
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b0110000;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b0110000;
+                
+            } else if( ( i == 14 ) || ( i == 18 ) || ( i == 31 ) || ( i == 33 ) ){ // 14, 18, 31, 33 == N move
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b0000100;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b0000100;
+                
+            } else if( i % 15 == 0 ){ //NW and -NW=SE 
+                
+                if( i == 15 ){ //KQBP = 15
+                    
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1101010; 
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1101001;  
+                    
+                } else { //QB = multiple of 15
+                    
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0101000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0101000;
+                    
+                }
+        
+            } else if ( i % 16 == 0 ) { //NORTH and -NORTH=SOUTH
+
+                if ( i == 16 ) { // KQR = 16
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1110000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1110000;
+
+                } else { // QR = multiple of 16
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0110000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0110000;
+
+                }
+
+            } else if ( i % 17 == 0 ) {
+
+                if ( i == 17 ) { // KQBP = 17
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1101010; 
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1101001; 
+
+                } else { // QB = multiple of 17 
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0101000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0101000;
+
+                }
+
+            }
+
+        }
+        
+        //System.out.println( Arrays.toString( ATTACK_TABLE ) );
+        
+    }
     
     List<String> positions = new ArrayList<>();
     
@@ -117,9 +189,15 @@ public class WAC implements Benchmark{
             }
             
             engine = new Engine( epd.substring( 0, endIndex - 1 ) );
+            //System.out.println( engine.board );
             long time = System.nanoTime();
-            engine.setWhiteTime( 300000 );
-            engine.setBlackTime( 300000 );
+            
+            if( engine.board.sideToMove == Constants.WHITE ){
+                engine.setWhiteTime( 300000 );
+            } else {
+                engine.setBlackTime( 300000 );
+            } 
+                
             engine.search( Constants.MAX_DEPTH_SEARCH );
             Move bestMove = engine.bestMove;
             

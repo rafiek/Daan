@@ -16,20 +16,94 @@ import static daan.utils.Constants.*;
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  */
-public class Daan {
+public class Daan{
+    
+    //7 bits -> K=64, Q=32, R=16, B=8, N=4, WP=2, BP=1
+    static {
+        
+        //0x77 offset is used to divide array in first part negative direction and second part positive direction
+                
+        for( int i = 1; i < 120; i++){ //for all distances
+            
+            if( i == 1 ){ //KQR=1, EAST and -EAST=WEST
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b1110000;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b1110000;
+                                
+            } else if( ( i > 1 ) && ( i < 8 ) ){ // QR = multiple of 1 up to 8
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b0110000;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b0110000;
+                
+            } else if( ( i == 14 ) || ( i == 18 ) || ( i == 31 ) || ( i == 33 ) ){ // 14, 18, 31, 33 == N move
+                
+                ATTACK_TABLE[ i + 0x77 ] = 0b0000100;
+                ATTACK_TABLE[ -i + 0x77 ] = 0b0000100;
+                
+            } else if( i % 15 == 0 ){ //NW and -NW=SE 
+                
+                if( i == 15 ){ //KQBP = 15
+                    
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1101010; 
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1101001;  
+                    
+                } else { //QB = multiple of 15
+                    
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0101000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0101000;
+                    
+                }
+        
+            } else if ( i % 16 == 0 ) { //NORTH and -NORTH=SOUTH
+
+                if ( i == 16 ) { // KQR = 16
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1110000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1110000;
+
+                } else { // QR = multiple of 16
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0110000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0110000;
+
+                }
+
+            } else if ( i % 17 == 0 ) {
+
+                if ( i == 17 ) { // KQBP = 17
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b1101010; 
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b1101001; 
+
+                } else { // QB = multiple of 17 
+
+                    ATTACK_TABLE[ i + 0x77 ] = 0b0101000;
+                    ATTACK_TABLE[ -i + 0x77 ] = 0b0101000;
+
+                }
+
+            }
+
+        }
+        
+        //System.out.println( Arrays.toString( ATTACK_TABLE ) );
+        
+    }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args)
     {
-        //Engine engine = new Engine("3Q4/p3b1k1/2p2rPp/2q5/4B3/P2P4/7P/6RK w - -");
+        
+        //Engine engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
         //System.out.println( engine.board.generateMoves() );
         Engine engine = null;
-        //engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
+        //engine = new Engine();
         //engine.start_perft();
         //System.out.println( engine.board );
-        //engine.search( MAX_DEPTH_SEARCH, 30000000, 30000000 );
+        //engine.setWhiteTime( 3000000 );
+        //engine.search( MAX_DEPTH_SEARCH );
         
         //engine = new Engine();
         //engine.start_perft();
@@ -110,7 +184,13 @@ public class Daan {
                 if ( command.indexOf( "wtime" ) > -1 ) {
                     String time = command.substring( command.indexOf( "wtime" ) + "wtime".length() + 1 );
                     wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
-                    engine.setWhiteTime( wtime );
+                    
+                    if( engine.board.sideToMove == WHITE ){
+                        
+                        engine.setWhiteTime( wtime );                        
+                        
+                    }
+                    
                 }
                 
                 if ( command.indexOf( "btime" ) > -1 ) {
@@ -121,7 +201,11 @@ public class Daan {
                         btime = Long.parseLong( time );
                     }
 
-                    engine.setBlackTime( wtime );
+                    if( engine.board.sideToMove == BLACK ){
+                        
+                        engine.setBlackTime( btime );
+                        
+                    }
                                        
                 }
                 
