@@ -105,7 +105,8 @@ public class Engine{
         startTime = System.currentTimeMillis();
         
         rootMoves = board.generatePseudoMoves();
-        
+        //sort the moves from high to low score
+        Collections.sort( rootMoves ); 
         //find the best move at depth 1
         int score = searchRoot( lowerBound, upperBound, depth );
         
@@ -114,9 +115,6 @@ public class Engine{
             return score;
             
         }
-        
-        //sort the moves from high to low score
-        Collections.sort( rootMoves ); 
         
         for( depth = 2; depth <= maxDepth; depth++){
             
@@ -200,14 +198,16 @@ public class Engine{
         int depthLeft = ply;
         Move currMove;
         int score;
+        int countFailHigh = 0;
         
         int index = rootMoves.indexOf( bestMove );
             
         if ( index >= 0 ) {
 
-            Collections.swap( rootMoves, 0, index );
+            rootMoves.remove( index );
+            rootMoves.add( 0, bestMove);
 
-        }
+        } 
         
         for ( int i = 0; i < rootMoves.size(); i++ ) {
             
@@ -223,7 +223,28 @@ public class Engine{
 
                 visitedNodes++;
 
-                score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                if( i == 0 ){
+                    
+                    score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                    
+                } else {
+                    
+                    score = -alphaBeta( -( alpha + 1 ), -alpha, depthLeft - 1, currMove );
+                    
+                    if( ( score > alpha ) && ( score < beta ) ){
+                        
+                        countFailHigh++;
+                        
+                        if ( countFailHigh == 2 ) {
+
+                            score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                            countFailHigh = 0;
+
+                        }
+                        
+                    }     
+                    
+                }
                 
                 board.unmakeMove( currMove );
                 
@@ -316,14 +337,20 @@ public class Engine{
         int numberOfMoves = moves.size();
         int score;
         boolean noLegalMoves = true;
+        int countFailHigh = 0;
         
         if( prevBestMove.next != null ){
             
-            int index = moves.indexOf( prevBestMove.next );
+            int indexPVMove = moves.indexOf( prevBestMove.next );
             
-            if( index >= 0 ){
+            if( indexPVMove >= 0 ){
                 
-                Collections.swap( moves, 0, index );
+                while( indexPVMove > 0 ){
+                    
+                    Collections.swap( moves, indexPVMove, indexPVMove - 1 );
+                    indexPVMove--;
+                    
+                }
                    
             }
             
@@ -331,7 +358,7 @@ public class Engine{
         
         for( int i = 0; i < numberOfMoves; i++ ){
             
-            currMove = ( i == 0 ) ? moves.get( 0 ) : Board.sortHighestScoringMove( numberOfMoves, moves, i );
+            currMove = ( ( i == 0 ) && ( prevBestMove.next != null ) ) ? moves.get( 0 ) : Board.sortHighestScoringMove( numberOfMoves, moves, i );
             
             board.makeMove( currMove );
             
@@ -346,15 +373,30 @@ public class Engine{
                 noLegalMoves = false;
 
                 //receive new line for evaluation
-                score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                if( i == 0 ){
+                    
+                     score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                    
+                } else {
+                    
+                    score = -alphaBeta( -( alpha + 1 ), -alpha, depthLeft - 1, currMove );
+                    
+                    if( ( score > alpha ) && ( score < beta ) ){
+                        
+                        countFailHigh++;
+                        
+                        if ( countFailHigh == 2 ) {
+
+                            score = -alphaBeta( -beta, -alpha, depthLeft - 1, currMove );
+                            countFailHigh = 0;
+
+                        }
+                        
+                    }     
+                    
+                }
                 
                 board.unmakeMove( currMove );
-                
-//                 if ( !timeOver() ) {
-//
-//                    break;
-//
-//                }
                  
                 currMove.score = score;
                 

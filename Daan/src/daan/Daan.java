@@ -96,14 +96,15 @@ public class Daan{
     public static void main(String[] args)
     {
         
-        //Engine engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
+        Engine engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
         //System.out.println( engine.board.generateMoves() );
-        Engine engine = null;
+        //Engine engine = null;
         //engine = new Engine();
         //engine.start_perft();
         //System.out.println( engine.board );
-        //engine.setWhiteTime( 3000000 );
-        //engine.search( MAX_DEPTH_SEARCH );
+        engine.setWhiteTime( 300000 );
+        //engine.setBlackTime( 300000 );
+        engine.search( MAX_DEPTH_SEARCH );
         
         //engine = new Engine();
         //engine.start_perft();

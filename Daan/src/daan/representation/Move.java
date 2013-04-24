@@ -156,14 +156,19 @@ public class Move implements Comparable<Move>{
             }
             
             if( ( type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
-            
+                
                 sb.append( Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, Math.abs( pieceTo ) ) );
             
             }
             
         } else {
             
-            char piece = (Character)Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, Math.abs( pieceFrom ) );
+            char piece = 0;
+            if( pieceFrom == B_PAWN ){
+                piece = (Character)Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, pieceFrom );
+            } else {
+                piece = (Character)Utils.getKeyByValue( PIECE_CHARACTER_MAPPINGS, Math.abs( pieceFrom ) );
+            }
             
             sb.append( piece );
             
@@ -182,18 +187,18 @@ public class Move implements Comparable<Move>{
     
     public int calculateMVVLVAScore(){
         
-        int result = ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceTo ) ) / 100 );
+        int result = Board.getPieceValue( pieceTo ) / 100 ;
         
         if( capture != EMPTY_SQUARE ){
             
-            result += PIECE_VALUE_MAPPINGS.get( Math.abs( capture ) );
-            result += 100 - ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceFrom ) ) / 10 );
+            result += Board.getPieceValue( capture ) ;
+            result += 100 - ( Board.getPieceValue( pieceFrom ) / 10 );
             
         }
         
         if( ( type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
             
-            result += ( PIECE_VALUE_MAPPINGS.get( Math.abs( pieceTo ) ) / 100 );
+            result += Board.getPieceValue( pieceTo ) / 100;
             
         }
         

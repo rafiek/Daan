@@ -122,6 +122,7 @@ public class Board {
                                         numberOfWhiteRooks++;
                                         break;
                                     case W_QUEEN:
+                                        valuePieceSquareWhite += PIECE_SQUARE_WQUEEN[ currentPositionIndex];
                                         numberOfWhiteQueens++;
                                         break;
                                 }
@@ -148,6 +149,7 @@ public class Board {
                                         numberOfBlackRooks++;
                                         break;
                                     case B_QUEEN:
+                                        valuePieceSquareBlack += PIECE_SQUARE_BQUEEN[ currentPositionIndex];
                                         numberOfBlackQueens++;
                                         break;
                                 }
@@ -352,20 +354,6 @@ public class Board {
         List<Move> quiescenceMoves = new ArrayList<>();
 
         for ( Move move : moves ) {
-
-// CHECKING THIS IS TERRIBLE FOR PERFORMANCE
-//            makeMove( move );
-//
-//            int kingPosition = ( sideToMove == WHITE ) ? whiteKingPosition : blackKingPosition;
-//
-//            if ( isAttacked( -sideToMove, kingPosition ) ) {
-//
-//                quiescenceMoves.add( move );
-//                continue;
-//
-//            }
-//
-//            unmakeMove( move );
 
             if ( ( move.type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ) {
 
@@ -765,8 +753,8 @@ public class Board {
     private void generatePseudoRookMoves( int square, boolean normal ) {
         int rookMove;
         int piece = isWhitePiece( position[ square] ) ? W_ROOK : B_ROOK;
-
-        for ( int direction = 0; direction < PIECE_VECTORS[ INDEX_ROOK_DIRECTION].length; direction++ ) {
+        int numberOfDirections = PIECE_VECTORS[ INDEX_ROOK_DIRECTION].length;
+        for ( int direction = 0; direction < numberOfDirections; direction++ ) {
 
             int step = 1;
             rookMove = square + PIECE_VECTORS[ INDEX_ROOK_DIRECTION][ direction] * step;
@@ -1101,89 +1089,7 @@ public class Board {
         }
         
         return false;
-/*
-
-        //pawns        
-        if ( ( byColor == WHITE ) && ( numberOfWhitePawns > 0 ) ) {
-
-            if ( !offTheBoard( square + SW ) ) {
-
-                if ( position[ square + SW] == W_PAWN ) {
-                    //System.out.println( "white pawn attack" );
-                    return true;
-
-                }
-
-            }
-
-            if ( !offTheBoard( square + SE ) ) {
-
-                if ( position[ square + SE] == W_PAWN ) {
-                    //System.out.println( "white pawn attack" );
-                    return true;
-
-                }
-
-            }
-
-        } else if( numberOfBlackPawns > 0 ){
-
-            if ( !offTheBoard( square + NW ) ) {
-
-                if ( position[ square + NW] == B_PAWN ) {
-                    //System.out.println( "black pawn attack" );
-                    //System.out.println( this );
-                    return true;
-
-                }
-
-            }
-
-            if ( !offTheBoard( square + NE ) ) {
-
-                if ( position[ square + NE] == B_PAWN ) {
-                    //System.out.println( "black pawn attack" );
-                    //System.out.println( this );
-                    return true;
-
-                }
-
-            }
-
-        }
         
-        
-
-        //knights           
-        if ( knightAttack( byColor, square ) ) {
-            //System.out.println( "knight attack" );
-            return true;
-
-        }
-
-        //kings
-        if ( kingAttack( byColor, square ) ) {
-            //System.out.println( "king attack" );
-            return true;
-
-        }
-
-        //straight
-        if ( straightAttack( byColor, square ) ) {
-            //System.out.println( "straightattack" );
-            return true;
-
-        }
-
-        //diagonal
-        if ( diagonalAttack( byColor, square ) ) {
-            //System.out.println( "diagonalattack" );
-            return true;
-
-        }
-
-
-        return false; */
     }
 
     public static int getRank( int square ) {
@@ -1222,11 +1128,8 @@ public class Board {
                     numberOfWhiteRooks--;
                     break;
                  case W_QUEEN:
-                    //valuePieceSquareWhite -= PIECE_SQUARE_WROOK[ square ];
+                    valuePieceSquareWhite -= PIECE_SQUARE_WQUEEN[ square ];
                     numberOfWhiteQueens--;
-                    break;
-                 case W_KING:
-                    valuePieceSquareWhite -= PIECE_SQUARE_WKING[ square ];
                     break;
             }
 
@@ -1252,11 +1155,8 @@ public class Board {
                     numberOfBlackRooks--;
                     break;
                  case B_QUEEN:
-                    //valuePieceSquareBlack -= PIECE_SQUARE_BROOK[ square];
+                    valuePieceSquareBlack -= PIECE_SQUARE_BQUEEN[ square];
                     numberOfBlackQueens--;
-                    break;
-                 case B_KING:
-                    valuePieceSquareBlack -= PIECE_SQUARE_BKING[ square ];
                     break;
             }
 
@@ -1290,11 +1190,8 @@ public class Board {
                     numberOfWhiteRooks++;
                     break;
                 case W_QUEEN:
-                    //valuePieceSquareWhite += PIECE_SQUARE_WROOK[ square ];
+                    valuePieceSquareWhite += PIECE_SQUARE_WQUEEN[ square ];
                     numberOfWhiteQueens++;
-                    break;
-                case W_KING:
-                    valuePieceSquareWhite += PIECE_SQUARE_WKING[ square ];                    
                     break;
             }
 
@@ -1320,11 +1217,8 @@ public class Board {
                     numberOfBlackRooks++;
                     break;
                 case B_QUEEN:
-                    //valuePieceSquareBlack += PIECE_SQUARE_BROOK[ square];
+                    valuePieceSquareBlack += PIECE_SQUARE_BQUEEN[ square];
                     numberOfBlackQueens++;
-                    break;
-                case B_KING:
-                    valuePieceSquareBlack += PIECE_SQUARE_BKING[ square];
                     break;
             }
 
@@ -1345,169 +1239,6 @@ public class Board {
     private boolean offTheBoard( int square ) {
 
         return ( ( square & 0x88 ) > 0 );
-
-    }
-
-    private boolean knightAttack( int byColor, int square ) {
-        
-        if( byColor == WHITE && numberOfWhiteKnights <= 0 ){
-            
-            return false;
-            
-        } else if( byColor == BLACK && numberOfBlackKnights <= 0 ){
-            
-            return false;
-            
-        }
-
-        int knightMove;
-        int knight = ( byColor == WHITE ) ? W_KNIGHT : B_KNIGHT;
-
-        for ( int direction = 0; direction < 8; direction++ ) {
-
-            knightMove = square + PIECE_VECTORS[ INDEX_KNIGHT_DIRECTION ][ direction ];
-
-            if ( !offTheBoard( knightMove ) ) {
-
-                if ( position[ knightMove ] == knight ) {
-
-                    return true;
-
-                }
-
-            }
-
-        }
-
-        return false;
-
-    }
-
-    private boolean kingAttack( int byColor, int square ) {
-
-        int kingMove;
-        int king = ( byColor == WHITE ) ? W_KING : B_KING;
-
-        for ( int direction = 0; direction < 8; direction++ ) {
-
-            kingMove = square + PIECE_VECTORS[ INDEX_KING_DIRECTION][ direction];
-
-            if ( !offTheBoard( kingMove ) ) {
-
-                if ( position[ kingMove] == king ) {
-
-                    return true;
-
-                }
-
-            }
-
-        }
-
-        return false;
-
-    }
-
-    private boolean straightAttack( int byColor, int square ) { 
-        
-        if( byColor == WHITE && ( numberOfWhiteRooks <= 0 && numberOfWhiteQueens <= 0 ) ){
-            
-            return false;
-            
-        } else if( byColor == BLACK && ( numberOfBlackRooks <= 0 && numberOfBlackQueens <= 0 ) ){
-            
-            return false;
-            
-        }
-        
-        int sliderMove;
-        int queen = ( byColor == WHITE ) ? W_QUEEN : B_QUEEN;
-        int rook = ( byColor == WHITE ) ? W_ROOK : B_ROOK;
-        
-        for ( int direction = 0; direction < PIECE_VECTORS[ INDEX_ROOK_DIRECTION].length; direction++ ) {
-
-            int step = 1;
-            sliderMove = square + PIECE_VECTORS[ INDEX_ROOK_DIRECTION][ direction] * step;
-
-            while ( !offTheBoard( sliderMove ) ) {
-
-                if ( position[ sliderMove] != EMPTY_SQUARE ) {
-
-                    if ( ( position[ sliderMove] == queen ) || ( position[ sliderMove] == rook ) ) {
-
-                        return true;
-
-                    } else {
-
-                        break;
-
-                    }
-
-                } else {
-
-                    step++;
-
-                }
-
-                sliderMove = square + PIECE_VECTORS[ INDEX_ROOK_DIRECTION][ direction] * step;
-
-            }
-
-        }
-
-        return false;
-
-    }
-
-    private boolean diagonalAttack( int byColor, int square ) {
-        
-        if( ( byColor == WHITE ) && ( numberOfWhiteBishops <= 0 && numberOfWhiteQueens <= 0 ) ){
-            
-            return false;
-            
-        } else if( ( byColor == BLACK ) && ( numberOfBlackBishops <= 0 && numberOfBlackQueens <= 0 ) ){
-            
-            return false;
-            
-        }
-
-        int sliderMove;
-        int queen = ( byColor == WHITE ) ? W_QUEEN : B_QUEEN;
-        int bishop = ( byColor == WHITE ) ? W_BISHOP : B_BISHOP;
-
-        for ( int direction = 0; direction < PIECE_VECTORS[ INDEX_BISHOP_DIRECTION].length; direction++ ) {
-
-            int step = 1;
-            sliderMove = square + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION][ direction] * step;
-
-            while ( !offTheBoard( sliderMove ) ) {
-
-                if ( position[ sliderMove] != EMPTY_SQUARE ) {
-
-                    if ( ( position[ sliderMove] == queen ) || ( position[ sliderMove] == bishop ) ) {
-//                        System.out.println( sliderMove );
-//                        System.out.println( position[ sliderMove ] );
-                        return true;
-
-                    } else {
-
-                        break;
-
-                    }
-
-                } else {
-
-                    step++;
-
-                }
-
-                sliderMove = square + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION][ direction] * step;
-
-            }
-
-        }
-
-        return false;
 
     }
 
@@ -1601,7 +1332,12 @@ public class Board {
 
         }
 
-        return ( numberOfPseudoMoves / 10 ) + ( ( valueMaterialWhite + valuePieceSquareWhite ) - ( valueMaterialBlack + valuePieceSquareBlack ) ) * sideToMove;
+        return ( numberOfPseudoMoves / 10 ) + 
+               ( 
+                    ( valueMaterialWhite + valuePieceSquareWhite + valueWhiteKingPosition() ) - 
+                    ( valueMaterialBlack + valuePieceSquareBlack + valueBlackKingPosition() ) 
+               ) 
+                * sideToMove;
 
     }
     
@@ -1706,6 +1442,84 @@ public class Board {
         }
         
         return true;
+        
+    }
+
+    private int valueWhiteKingPosition() {
+        
+        int value = 0;
+        
+        if( endGame() ){
+            
+            value = PIECE_SQUARE_WKING_ENDGAME[ whiteKingPosition ];
+            
+        } else {
+            
+            value = PIECE_SQUARE_WKING[ whiteKingPosition ];
+            
+        }
+        
+        return value;
+        
+    }
+    
+
+    private int valueBlackKingPosition() {
+        
+        int value = 0;
+        
+        if( endGame() ){
+            
+            value = PIECE_SQUARE_BKING_ENDGAME[ blackKingPosition ];
+            
+        } else {
+            
+            value = PIECE_SQUARE_BKING[ blackKingPosition ];
+            
+        }
+        
+        return value;
+        
+    }
+
+    private boolean endGame() {
+        
+        boolean endGame = false;
+        
+        if( ( numberOfWhiteQueens <= 0 ) && ( numberOfBlackQueens <= 0 ) ){
+            
+            endGame = true;
+            
+        } else if( numberOfWhiteQueens == 1 && numberOfBlackQueens == 1 ){
+            
+            int numberOfWhiteMinorPieces = numberOfWhiteRooks + numberOfWhiteBishops + numberOfWhiteKnights;
+            int numberOfBlackMinorPieces = numberOfBlackRooks + numberOfBlackBishops + numberOfBlackKnights;
+                    
+            if( ( numberOfWhiteMinorPieces <= 1 ) && ( numberOfBlackMinorPieces <= 1 ) ){
+                
+                endGame = true;
+                
+            }
+            
+        }
+        
+        return endGame;
+    }
+    
+    public static int getPieceValue( int piece ){
+        
+        int value = 0;
+        
+        switch( Math.abs( piece ) ){
+            case -B_PAWN    : value = VALUE_PAWN;   break;
+            case W_PAWN     : value = VALUE_PAWN;   break;
+            case W_KNIGHT   : value = VALUE_KNIGHT; break;
+            case W_BISHOP   : value = VALUE_BISHOP; break;
+            case W_ROOK     : value = VALUE_ROOK;   break;
+            case W_QUEEN    : value = VALUE_QUEEN;  break;                
+        }
+        
+        return value;
         
     }
 
