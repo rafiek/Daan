@@ -38,7 +38,7 @@ public class Move implements Comparable<Move>{
         this.castleAvailability = 0;
         this.halfMoveClock      = 0;
         this.enPassant          = -100;        
-        this.score              = START_VALUE_ALPHA;
+        this.score              = 0;
         
     }
     
@@ -106,7 +106,7 @@ public class Move implements Comparable<Move>{
             }
 
         }
-        return sb.toString();
+        return sb.toString()/*+" "+this.score*/;
     }
     
     @Override
@@ -198,7 +198,7 @@ public class Move implements Comparable<Move>{
         
         if( ( type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ){
             
-            result += Board.getPieceValue( pieceTo ) / 100;
+            result += Board.getPieceValue( pieceTo );
             
         }
         
@@ -208,22 +208,22 @@ public class Move implements Comparable<Move>{
     
     public String getLine() {
         
-        return this.toString() + ( ( this.next == null ) ? "" : " " + this.next.getLine() ) ;
+        return this.toString() + ( ( this.next == null ) ? " " : " " + this.next.getLine() ) ;
         
     }
 
     @Override
     public int compareTo( Move other ) {
 
-        if ( other.score == this.score ) {
-            
-            return other.calculateMVVLVAScore() - this.calculateMVVLVAScore();
-            
-        } else {
+//        if ( other.score == this.score ) {
+//            
+//            return other.calculateMVVLVAScore() - this.calculateMVVLVAScore();
+//            
+//        } else {
             
             return other.score - this.score;
             
-        }
+//        }
 
     }
 

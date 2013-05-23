@@ -192,14 +192,14 @@ public class WAC implements Benchmark{
             //System.out.println( engine.board );
             long time = System.nanoTime();
             
-            if( engine.board.sideToMove == Constants.WHITE ){
+            if( engine.getBoard().sideToMove == Constants.WHITE ){
                 engine.setWhiteTime( 300000 );
             } else {
                 engine.setBlackTime( 300000 );
             } 
                 
             engine.search( Constants.MAX_DEPTH_SEARCH );
-            Move bestMove = engine.bestMove;
+            Move bestMove = engine.getBestMove();
             
             try {
                 
@@ -207,7 +207,7 @@ public class WAC implements Benchmark{
                 out.newLine();
                 out.write( epd );
                 out.newLine();
-                out.write( "time: " + twoDForm.format( ( System.nanoTime() - time ) / Math.pow( 10, 9 ) ) + " nodes: " + engine.visitedNodes );
+                out.write( "time: " + twoDForm.format( ( System.nanoTime() - time ) / Math.pow( 10, 9 ) ) + " nodes: " + engine.getVisitedNodes() );
                 out.newLine();
                 
                 int stopIndex;

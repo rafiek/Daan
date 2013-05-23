@@ -86,8 +86,6 @@ public class Daan{
 
         }
         
-        //System.out.println( Arrays.toString( ATTACK_TABLE ) );
-        
     }
 
     /**
@@ -96,18 +94,37 @@ public class Daan{
     public static void main(String[] args)
     {
         
-        Engine engine = new Engine("R7/P4k2/8/8/8/8/r7/6K1 w - -");
-        //System.out.println( engine.board.generateMoves() );
-        //Engine engine = null;
-        //engine = new Engine();
-        //engine.start_perft();
-        //System.out.println( engine.board );
-        engine.setWhiteTime( 300000 );
-        //engine.setBlackTime( 300000 );
-        engine.search( MAX_DEPTH_SEARCH );
+        Engine engine = null;//new Engine("1k6/5RP1/1P6/1K6/6r1/8/8/8 w - -");
+//        String[] move = { "c1c6" };
+//        engine.makeMoves( move );
+//        System.out.println( engine.getBoard().sideToMove );
+//        System.out.println( engine.getBoard().generateQuiescence() );
+//        System.out.println( "c1c6 " );
+//        move[0] = "f8d8";
+//        engine.makeMoves( move );
+//        System.out.println( "f8d8 " + engine.getBoard().evaluate( 0 ) );
+//        move[0] = "d1d5";
+//        engine.makeMoves( move );
+//        System.out.println( "d1d5 " + engine.getBoard().evaluate( 0 ) );
+//        move[0] = "b8b5";
+//        engine.makeMoves( move );
+//        System.out.println( "b8b5 " + engine.getBoard().evaluate( 0 ) );
+//        move[0] = "d5d6";
+//        engine.makeMoves( move );
+//        System.out.println( "d5d6 " + engine.getBoard().evaluate( 0 ) );
+//        move[0] = "b5b4";
+//        engine.makeMoves( move );
+//        System.out.println( "b5b4 " + engine.getBoard().evaluate( 0 ) );
+//        
+//        engine = new Engine("3r4/4q1kp/Q2n2p1/5p2/pr6/6P1/P3PPBP/3RR1K1 w - - 0 4");
+//        System.out.println( engine.getBoard().evaluate( 0 ) );
+//        engine = new Engine("1r1r2k1/1b2q2p/3n2p1/3R1p2/pP6/2Q3P1/P3PPBP/4R1K1 w - - 0 5");
+//        System.out.println( engine.getBoard().evaluate( 0 ) );
+               
         
-        //engine = new Engine();
-        //engine.start_perft();
+        //engine.setBlackTime( 3000000 );
+        //engine.setWhiteTime( 300000 );
+        //engine.search( MAX_DEPTH_SEARCH );
         
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -186,7 +203,7 @@ public class Daan{
                     String time = command.substring( command.indexOf( "wtime" ) + "wtime".length() + 1 );
                     wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
                     
-                    if( engine.board.sideToMove == WHITE ){
+                    if( engine.getBoard().sideToMove == WHITE ){
                         
                         engine.setWhiteTime( wtime );                        
                         
@@ -202,7 +219,7 @@ public class Daan{
                         btime = Long.parseLong( time );
                     }
 
-                    if( engine.board.sideToMove == BLACK ){
+                    if( engine.getBoard().sideToMove == BLACK ){
                         
                         engine.setBlackTime( btime );
                         

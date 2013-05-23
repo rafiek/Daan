@@ -102,7 +102,7 @@ public class Board {
 
                             if ( isWhitePiece( position[currentPositionIndex] ) ) {
 
-                                valueMaterialWhite += PIECE_VALUE_MAPPINGS.get( Math.abs( position[currentPositionIndex] ) );
+                                valueMaterialWhite += Board.getPieceValue( position[currentPositionIndex] );
 
                                 switch ( position[currentPositionIndex] ) {
                                     case W_PAWN:
@@ -129,7 +129,7 @@ public class Board {
 
                             } else {
 
-                                valueMaterialBlack += PIECE_VALUE_MAPPINGS.get( Math.abs( position[currentPositionIndex] ) );
+                                valueMaterialBlack += Board.getPieceValue( position[currentPositionIndex] );
 
                                 switch ( position[currentPositionIndex] ) {
                                     case B_PAWN:
@@ -398,7 +398,7 @@ public class Board {
                     break;
                 case W_BISHOP:
                     //System.out.println( "generating bishop moves" );
-                    generatePseudoBishopMoves( entry.getKey(), normal );
+                    generatePseudoBishopMoves( entry.getKey(), normal );                    
                     break;
                 case W_KING:
                     //System.out.println( "generating king moves" );
@@ -416,7 +416,7 @@ public class Board {
             }
 
         }
-
+        
         return moves;
 
     }
@@ -427,16 +427,28 @@ public class Board {
         
         for( int i = current + 1; i < numberOfMoves; i++ ){
             
-            if( moves.get( high ).compareTo( moves.get( i ) ) > 0 ){
+            int score = moves.get( high ).compareTo( moves.get( i ) );
+            
+            if( score > 0 ){
                 
                 high = i;
                 
+            } else if( score == 0 ){
+                
+                score = moves.get( i ).calculateMVVLVAScore() - moves.get( high ).calculateMVVLVAScore();
+                
+                if( score > 0 ){
+                    
+                    high = i;
+                    
+                }
+                
             }
             
-        }
+        }        
         
         Collections.swap( moves, current, high );
-        
+                
         return moves.get( current );
         
     }
@@ -498,7 +510,7 @@ public class Board {
                 
             }
 
-            if ( getRank( square ) == START_RANK && normal ) {
+            if ( ( getRank( square ) == START_RANK ) && normal ) {
 
                 if ( squareIsEmpty( square + DOUBLE_PUSH ) ) {
 
@@ -584,7 +596,7 @@ public class Board {
 
             if ( !offTheBoard( knightMove ) ) {
 
-                if ( position[ knightMove] == EMPTY_SQUARE && normal ) {
+                if ( ( position[ knightMove ] == EMPTY_SQUARE ) && normal ) {
 
                     moves.add( createMove( piece, square, knightMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
 
@@ -616,7 +628,7 @@ public class Board {
 
             if ( !offTheBoard( kingMove ) ) {
 
-                if ( position[ kingMove ] == EMPTY_SQUARE && normal ) {
+                if ( ( position[ kingMove ] == EMPTY_SQUARE ) && normal ) {
 
                     moves.add( createMove( piece, square, kingMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
 
@@ -692,22 +704,22 @@ public class Board {
 
             while ( !offTheBoard( bishopMove ) ) {
 
-                if ( position[ bishopMove] == EMPTY_SQUARE && normal ) {
+                if ( ( position[ bishopMove] == EMPTY_SQUARE ) && normal ) {
 
                     moves.add( createMove( piece, square, bishopMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
-                    step++;
-
-                } else if ( position[ square] * position[ bishopMove] < 0 ) {
-
+                    
+                } else if ( ( position[ square] * position[ bishopMove] ) < 0 ) {
+                    
                     moves.add( createMove( piece, square, bishopMove, piece, MOVE_TYPE_CAPTURE, position[ bishopMove] ) );
                     break;
-
-                } else {
-
+                    
+                } else if( ( position[ square] * position[ bishopMove] ) > 0 ) {
+                    
                     break;
 
                 }
 
+                step++;
                 bishopMove = square + PIECE_VECTORS[ INDEX_BISHOP_DIRECTION][ direction] * step;
 
             }
@@ -727,22 +739,22 @@ public class Board {
 
             while ( !offTheBoard( queenMove ) ) {
 
-                if ( position[ queenMove] == EMPTY_SQUARE && normal ) {
+                if ( ( position[ queenMove] == EMPTY_SQUARE ) && normal ) {
 
-                    moves.add( createMove( piece, square, queenMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
-                    step++;
+                    moves.add( createMove( piece, square, queenMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );                    
 
                 } else if ( position[ square] * position[ queenMove] < 0 ) {
 
                     moves.add( createMove( piece, square, queenMove, piece, MOVE_TYPE_CAPTURE, position[ queenMove] ) );
                     break;
 
-                } else {
+                } else if ( position[ square] * position[ queenMove] > 0 ) {
 
                     break;
 
                 }
 
+                step++;
                 queenMove = square + PIECE_VECTORS[ INDEX_QUEEN_DIRECTION][ direction] * step;
 
             }
@@ -763,20 +775,20 @@ public class Board {
 
                 if ( ( position[ rookMove ] == EMPTY_SQUARE ) && normal ) {
 
-                    moves.add( createMove( piece, square, rookMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );
-                    step++;
+                    moves.add( createMove( piece, square, rookMove, piece, MOVE_TYPE_NORMAL, EMPTY_SQUARE ) );                    
 
                 } else if ( position[ square] * position[ rookMove] < 0 ) {
 
                     moves.add( createMove( piece, square, rookMove, piece, MOVE_TYPE_CAPTURE, position[ rookMove] ) );
                     break;
 
-                } else {
+                } else if ( position[ square] * position[ rookMove] > 0 ) {
 
                     break;
 
                 }
 
+                step++;
                 rookMove = square + PIECE_VECTORS[ INDEX_ROOK_DIRECTION][ direction] * step;
 
             }
@@ -809,11 +821,11 @@ public class Board {
 
             if ( isWhitePiece( move.capture ) ) {
 
-                valueMaterialWhite -= PIECE_VALUE_MAPPINGS.get( Math.abs( move.capture ) );
+                valueMaterialWhite -= Board.getPieceValue( move.capture );
 
             } else {
 
-                valueMaterialBlack -= PIECE_VALUE_MAPPINGS.get( Math.abs( move.capture ) );
+                valueMaterialBlack -= Board.getPieceValue( move.capture );
 
             }
 
@@ -827,12 +839,12 @@ public class Board {
             if ( isWhitePiece( move.pieceFrom ) ) {
 
                 valueMaterialWhite -= VALUE_PAWN;
-                valueMaterialWhite += PIECE_VALUE_MAPPINGS.get( Math.abs( move.pieceTo ) );
+                valueMaterialWhite += Board.getPieceValue( move.pieceTo );
 
             } else {
 
                 valueMaterialBlack -= VALUE_PAWN;
-                valueMaterialBlack += PIECE_VALUE_MAPPINGS.get( Math.abs( move.pieceTo ) );
+                valueMaterialBlack += Board.getPieceValue( move.pieceTo );
 
             }
 
@@ -982,11 +994,11 @@ public class Board {
 
             if ( isWhitePiece( move.capture ) ) {
 
-                valueMaterialWhite += PIECE_VALUE_MAPPINGS.get( Math.abs( move.capture ) );
+                valueMaterialWhite += Board.getPieceValue( move.capture );
 
             } else {
 
-                valueMaterialBlack += PIECE_VALUE_MAPPINGS.get( Math.abs( move.capture ) );
+                valueMaterialBlack += Board.getPieceValue( move.capture );
 
             }
 
@@ -997,12 +1009,12 @@ public class Board {
             if ( isWhitePiece( move.pieceFrom ) ) {
 
                 valueMaterialWhite += VALUE_PAWN;
-                valueMaterialWhite -= PIECE_VALUE_MAPPINGS.get( Math.abs( move.pieceTo ) );
+                valueMaterialWhite -= Board.getPieceValue( move.pieceTo );
 
             } else {
 
                 valueMaterialBlack += VALUE_PAWN;
-                valueMaterialBlack -= PIECE_VALUE_MAPPINGS.get( Math.abs( move.pieceTo ) );
+                valueMaterialBlack -= Board.getPieceValue( move.pieceTo );
 
             }
 
@@ -1511,7 +1523,7 @@ public class Board {
         int value = 0;
         
         switch( Math.abs( piece ) ){
-            case -B_PAWN    : value = VALUE_PAWN;   break;
+            case 1          : value = VALUE_PAWN;   break;
             case W_PAWN     : value = VALUE_PAWN;   break;
             case W_KNIGHT   : value = VALUE_KNIGHT; break;
             case W_BISHOP   : value = VALUE_BISHOP; break;
@@ -1520,6 +1532,12 @@ public class Board {
         }
         
         return value;
+        
+    }
+
+    public boolean isLosingCapture( Move currMove ) {
+       
+        return getPieceValue( currMove.pieceFrom ) > getPieceValue( currMove.capture );
         
     }
 
