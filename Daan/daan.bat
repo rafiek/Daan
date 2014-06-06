@@ -1,1 +1,0 @@
-java -Xmx1024M -jar dist\Daan.jar

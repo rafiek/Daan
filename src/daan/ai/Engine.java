@@ -26,21 +26,14 @@ import static daan.utils.Constants.*;
  */
 public class Engine{
     
-    private int captures, ep;
-    
-    private Board board;
-
-    private int visitedNodes;
-
-    private long maxThinkingTime;
-
-    private long startTime;
-    
-    private List<Move> rootMoves;
-    
-    private Move bestMove;
-
     private final BufferedWriter standardOutput = new BufferedWriter( new PrintWriter( System.out ) );
+    private int captures, ep;
+    private Board board;
+    private int visitedNodes;
+    private long maxThinkingTime;
+    private long startTime;
+    private List<Move> rootMoves;
+    private Move bestMove;
     
     public Engine(){
         
