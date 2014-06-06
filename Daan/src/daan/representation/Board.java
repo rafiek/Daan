@@ -4,14 +4,11 @@
  */
 package daan.representation;
 
-import static daan.utils.Constants.*;
 import daan.utils.Utils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+
+import static daan.utils.Constants.*;
 
 /**
  *
@@ -21,13 +18,13 @@ import java.util.Set;
 public class Board {
 
     //current position in 0x88 format, 0x00=A1, 0x07=H1
-    public int[] position;
+    private int[] position;
 
     //keeps a list of the location --> the white pieces
-    public HashMap<Integer, Integer> locationOfWhitePieces;
+    private Map<Integer, Integer> locationOfWhitePieces;
 
     //keeps a list of the location --> the black pieces
-    public HashMap<Integer, Integer> locationOfBlackPieces;
+    private Map<Integer, Integer> locationOfBlackPieces;
 
     //whose turn is it to move
     public int sideToMove;
@@ -59,13 +56,17 @@ public class Board {
 
     private int valuePieceSquareBlack;
     
-    public int numberOfWhitePawns, numberOfWhiteKnights, numberOfWhiteBishops, numberOfWhiteRooks, numberOfWhiteQueens;
+    private int numberOfWhitePawns;
+    private int numberOfWhiteKnights;
+    private int numberOfWhiteBishops;
+    private int numberOfWhiteRooks;
+    private int numberOfWhiteQueens;
     
-    public int numberOfBlackPawns, numberOfBlackKnights, numberOfBlackBishops, numberOfBlackRooks, numberOfBlackQueens;    
-
-    public Board() {
-        initPosition( FEN_START_POSITION );
-    }
+    private int numberOfBlackPawns;
+    private int numberOfBlackKnights;
+    private int numberOfBlackBishops;
+    private int numberOfBlackRooks;
+    private int numberOfBlackQueens;
 
     public Board( String FEN ) {
         initPosition( FEN );
@@ -303,7 +304,7 @@ public class Board {
                         default:
                             break;
                     }
-                } else if ( square == 0 ) {
+                } else {
                     emptySquares++;
                 }
             }
@@ -349,29 +350,7 @@ public class Board {
         return fen.toString();
     }
 
-    public List filterQuiescenceMoves( List<Move> moves ) {
-
-        List<Move> quiescenceMoves = new ArrayList<>();
-
-        for ( Move move : moves ) {
-
-            if ( ( move.type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ) {
-
-                quiescenceMoves.add( move );
-
-            } else if ( ( move.type & MOVE_TYPE_PROMOTION ) == MOVE_TYPE_PROMOTION ) {
-
-                quiescenceMoves.add( move );
-
-            }
-
-        }
-
-        return quiescenceMoves;
-
-    }
-
-    public List generateMoves( boolean normal ) {
+    List generateMoves(boolean normal) {
 
         //new set of moves
         moves = new ArrayList<>();
@@ -1104,7 +1083,7 @@ public class Board {
         
     }
 
-    public static int getRank( int square ) {
+    private static int getRank(int square) {
         return ( square >> 4 );
     }
 
@@ -1260,7 +1239,7 @@ public class Board {
 
     }
 
-    public int evaluate( int depthLeft ) {
+    public int evaluate() {
 
         //king can be in check and there are no possible moves, then evaluate to checkmate
         List<Move> pseudoMoves = generatePseudoMoves();
@@ -1269,25 +1248,25 @@ public class Board {
         Move move;
         int numberOfPseudoMoves = pseudoMoves.size();
 
-        for ( int i = 0; i < numberOfPseudoMoves; i++ ) {
+        for (Move pseudoMove : pseudoMoves) {
 
-            move = pseudoMoves.get( i );
+            move = pseudoMove;
 
-            makeMove( move );
+            makeMove(move);
 
-            int kingPosition = ( sideToMove == WHITE ) ? blackKingPosition : whiteKingPosition;
+            int kingPosition = (sideToMove == WHITE) ? blackKingPosition : whiteKingPosition;
 
-            if ( !isAttacked( sideToMove, kingPosition ) ) {
+            if (!isAttacked(sideToMove, kingPosition)) {
 
                 noLegalMoves = false;
 
-                unmakeMove( move );
+                unmakeMove(move);
 
                 break;
 
             }
 
-            unmakeMove( move );
+            unmakeMove(move);
 
         }
 
@@ -1297,7 +1276,7 @@ public class Board {
 
             if ( isAttacked( -sideToMove, kingPosition ) ) {
 
-                return -( VALUE_MATE - ( MAX_DEPTH_SEARCH - depthLeft ) );
+                return -( VALUE_MATE - ( MAX_DEPTH_SEARCH - 0) );
 
             } else {
 
@@ -1353,13 +1332,13 @@ public class Board {
 
     }
     
-    public List<Move> generateQuiescence(){
+    public List generateQuiescence(){
         
         return generateMoves( false );
         
     }
     
-    public List<Move> generatePseudoMoves(){
+    public List generatePseudoMoves(){
         
         return generateMoves( true );
         
@@ -1367,15 +1346,15 @@ public class Board {
 
     public void makeMoves( String[] moves ) {
 
-        for ( int i = 0; i < moves.length; i++ ) {
+        for (String move1 : moves) {
 
             List<Move> listOfMoves = generatePseudoMoves();
 
-            for ( Move move : listOfMoves ) {
+            for (Move move : listOfMoves) {
 
-                if ( move.toString().equals( moves[i] ) ) {
+                if (move.toString().equals(move1)) {
 
-                    makeMove( move );
+                    makeMove(move);
 
                     break;
 
@@ -1532,12 +1511,6 @@ public class Board {
         }
         
         return value;
-        
-    }
-
-    public boolean isLosingCapture( Move currMove ) {
-       
-        return getPieceValue( currMove.pieceFrom ) > getPieceValue( currMove.capture );
         
     }
 

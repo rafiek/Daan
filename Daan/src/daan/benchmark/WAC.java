@@ -8,21 +8,17 @@ package daan.benchmark;
 import daan.ai.Engine;
 import daan.representation.Move;
 import daan.utils.Constants;
-import static daan.utils.Constants.ATTACK_TABLE;
 import daan.utils.Utils;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static daan.utils.Constants.ATTACK_TABLE;
 
 /**
  *
@@ -102,7 +98,7 @@ public class WAC implements Benchmark{
         
     }
     
-    List<String> positions = new ArrayList<>();
+    private final List<String> positions = new ArrayList<>();
     
     public static void main( String[] args ){
         
@@ -113,8 +109,7 @@ public class WAC implements Benchmark{
         
     }
 
-    @Override
-    public void loadPositions() {
+    private void loadPositions() {
         
         FileInputStream wacFile = null;
         
@@ -151,8 +146,7 @@ public class WAC implements Benchmark{
         
     }
 
-    @Override
-    public void benchmark() {
+    private void benchmark() {
         
         Iterator iterator = positions.iterator();
         Engine engine;
@@ -178,7 +172,7 @@ public class WAC implements Benchmark{
             String epd = (String) iterator.next();
             int endIndex;
 
-            if ( epd.indexOf( "am" ) != -1 ) {
+            if (epd.contains("am")) {
 
                 endIndex = epd.indexOf( "am" );
 
@@ -198,7 +192,7 @@ public class WAC implements Benchmark{
                 engine.setBlackTime( 300000 );
             } 
                 
-            engine.search( Constants.MAX_DEPTH_SEARCH );
+            engine.search();
             Move bestMove = engine.getBestMove();
             
             try {

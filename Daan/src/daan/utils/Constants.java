@@ -4,11 +4,12 @@
  */
 package daan.utils;
 
+import daan.representation.Move;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import daan.representation.Move;
 
 /**
  *

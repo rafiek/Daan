@@ -7,16 +7,17 @@ package daan.ai;
 
 import daan.representation.Board;
 import daan.representation.Move;
-import static daan.utils.Constants.*;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static daan.utils.Constants.*;
 
 /**
  *
@@ -38,10 +39,8 @@ public class Engine{
     private List<Move> rootMoves;
     
     private Move bestMove;
-    
-    private TreeMap<Move,Integer>[] killerMoves = new TreeMap[ MAX_DEPTH_SEARCH ];
-    
-    private BufferedWriter standardOutput = new BufferedWriter( new PrintWriter( System.out ) );
+
+    private final BufferedWriter standardOutput = new BufferedWriter( new PrintWriter( System.out ) );
     
     public Engine(){
         
@@ -66,17 +65,9 @@ public class Engine{
         return this.board;
     }
     
-    private boolean timeOver() {
-        
-        if ( ( System.currentTimeMillis() - startTime ) >= maxThinkingTime ) {
+    private boolean timeOut() {
 
-            return false;
-
-        } else {
-            
-            return true;
-            
-        }
+        return (System.currentTimeMillis() - startTime) >= maxThinkingTime;
         
     }
     
@@ -98,7 +89,7 @@ public class Engine{
         
     }
     
-    public int search( int maxDepth ) {
+    public void search() {
         
         int depth = 4;
         visitedNodes = 0;
@@ -115,15 +106,15 @@ public class Engine{
         
         if( rootMoves.isEmpty() ){ //no legal moves, mate or stalemate
             
-            return score;
+            return;
             
         }
         
-        for( depth = 2; depth <= maxDepth; depth++){
+        for( depth = 2; depth <= daan.utils.Constants.MAX_DEPTH_SEARCH; depth++){
             
             Collections.sort( rootMoves );
             
-            if( !timeOver() ){
+            if(timeOut()){
                 
                 break;
                 
@@ -197,8 +188,6 @@ public class Engine{
         }
         
         System.out.println( "bestmove " + bestMove );
-
-        return score;
         
     }
     
@@ -241,7 +230,7 @@ public class Engine{
                 
                 board.unmakeMove( currMove );
                 
-                if ( !timeOver() ) {
+                if (timeOut()) {
 
                     return alpha;
 
@@ -383,7 +372,7 @@ public class Engine{
                 
                 board.unmakeMove( currMove ); 
                 
-                if ( !timeOver() ) {
+                if (timeOut()) {
 
                     return alpha;
 
@@ -445,7 +434,7 @@ public class Engine{
 
         List<Move> moves;
 
-        int standPat = board.evaluate( 0 );
+        int standPat = board.evaluate();
 
         if ( standPat > alpha ) {
 
@@ -516,7 +505,7 @@ public class Engine{
                 
                 board.unmakeMove( currMove ); 
                 
-                if ( !timeOver() ) {
+                if (timeOut()) {
 
                     return alpha;
 
@@ -586,29 +575,29 @@ public class Engine{
         //System.out.println( moves );
         //System.out.println( board );
         int numberOfMoves = moves.size();
-                
-        for( int i = 0; i < numberOfMoves; i++ ){
-            
-            board.makeMove( moves.get( i ) );
-            
+
+        for (Move move : moves) {
+
+            board.makeMove(move);
+
             //System.out.println( moves );
-            
-            int kingPosition = ( board.sideToMove == WHITE ) ? board.blackKingPosition : board.whiteKingPosition;
-            
-            if( !board.isAttacked( board.sideToMove, kingPosition ) ){
+
+            int kingPosition = (board.sideToMove == WHITE) ? board.blackKingPosition : board.whiteKingPosition;
+
+            if (!board.isAttacked(board.sideToMove, kingPosition)) {
                 //System.out.println( "legal move!" );
-                if( ( moves.get( i ).type & MOVE_TYPE_CAPTURE ) == MOVE_TYPE_CAPTURE ){
+                if ((move.type & MOVE_TYPE_CAPTURE) == MOVE_TYPE_CAPTURE) {
                     captures++;
                 }
-                if( moves.get( i ).type == MOVE_TYPE_EP ){
+                if (move.type == MOVE_TYPE_EP) {
                     ep++;
                 }
-                nodes += perft( depth - 1 );                
-               
-            } 
-            
-            board.unmakeMove( moves.get( i ) );
-           
+                nodes += perft(depth - 1);
+
+            }
+
+            board.unmakeMove(move);
+
         }
                 
         return nodes;
@@ -722,30 +711,6 @@ public class Engine{
 //
 //    }
 
-    private void addKillerMove( int ply, Move currMove ) {
-        
-        if( killerMoves[ ply ] == null ){
-            
-            killerMoves[ ply ] = new TreeMap<>();
-            
-        }
-               
-                
-        
-        if( killerMoves[ ply ].containsKey( currMove ) ){
-            
-            int occurences = killerMoves[ ply ].remove( currMove );            
-            occurences++;
-            killerMoves[ ply ].put( currMove, occurences );
-            
-        } else {
-            
-            killerMoves[ ply ].put( currMove, 1 );
-            
-        }
-        
-    }
-    
     public int getVisitedNodes() {
         
         return visitedNodes;

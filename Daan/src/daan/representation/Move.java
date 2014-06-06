@@ -5,8 +5,9 @@
 
 package daan.representation;
 
-import static daan.utils.Constants.*;
 import daan.utils.Utils;
+
+import static daan.utils.Constants.*;
 
 /**
  *
@@ -27,21 +28,6 @@ public class Move implements Comparable<Move>{
     public int score;
     public Move next;
 
-    public Move(){
-        
-        this.pieceFrom          = 0;
-        this.from               = 0;
-        this.to                 = 0;
-        this.pieceTo            = 0;
-        this.capture            = 0;
-        this.type               = 0;
-        this.castleAvailability = 0;
-        this.halfMoveClock      = 0;
-        this.enPassant          = -100;        
-        this.score              = 0;
-        
-    }
-    
     public Move(int pieceFrom, int from, int to, int pieceTo, int type, int capture, int castleAvailability, int halfMoveClock, int enPassant) {
         
         this.pieceFrom          = pieceFrom;
@@ -56,14 +42,8 @@ public class Move implements Comparable<Move>{
         this.score              = 0;
         
     }
-    
-    public Move( Move move ){
-        
-        this.copy( move );
-        
-    }
-    
-    public void copy( Move move ){
+
+    void copy(Move move){
         
         this.pieceFrom          = move.pieceFrom;
         this.from               = move.from;

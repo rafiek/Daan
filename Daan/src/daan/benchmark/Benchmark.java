@@ -8,10 +8,6 @@ package daan.benchmark;
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  */
-public interface Benchmark {
-    
-    void loadPositions();
-    
-    void benchmark();
-    
+interface Benchmark {
+
 }

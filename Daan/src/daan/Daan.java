@@ -1,22 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package daan;
 
 import daan.ai.Engine;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import static daan.utils.Constants.*;
 
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  */
-public class Daan{
+final class Daan{
     
     //7 bits -> K=64, Q=32, R=16, B=8, N=4, WP=2, BP=1
     static {
@@ -88,43 +86,16 @@ public class Daan{
         
     }
 
+    private Daan() {
+    }
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args)
     {
         
-        Engine engine = null;//new Engine("1k6/5RP1/1P6/1K6/6r1/8/8/8 w - -");
-//        String[] move = { "c1c6" };
-//        engine.makeMoves( move );
-//        System.out.println( engine.getBoard().sideToMove );
-//        System.out.println( engine.getBoard().generateQuiescence() );
-//        System.out.println( "c1c6 " );
-//        move[0] = "f8d8";
-//        engine.makeMoves( move );
-//        System.out.println( "f8d8 " + engine.getBoard().evaluate( 0 ) );
-//        move[0] = "d1d5";
-//        engine.makeMoves( move );
-//        System.out.println( "d1d5 " + engine.getBoard().evaluate( 0 ) );
-//        move[0] = "b8b5";
-//        engine.makeMoves( move );
-//        System.out.println( "b8b5 " + engine.getBoard().evaluate( 0 ) );
-//        move[0] = "d5d6";
-//        engine.makeMoves( move );
-//        System.out.println( "d5d6 " + engine.getBoard().evaluate( 0 ) );
-//        move[0] = "b5b4";
-//        engine.makeMoves( move );
-//        System.out.println( "b5b4 " + engine.getBoard().evaluate( 0 ) );
-//        
-//        engine = new Engine("3r4/4q1kp/Q2n2p1/5p2/pr6/6P1/P3PPBP/3RR1K1 w - - 0 4");
-//        System.out.println( engine.getBoard().evaluate( 0 ) );
-//        engine = new Engine("1r1r2k1/1b2q2p/3n2p1/3R1p2/pP6/2Q3P1/P3PPBP/4R1K1 w - - 0 5");
-//        System.out.println( engine.getBoard().evaluate( 0 ) );
-               
-        
-        //engine.setBlackTime( 3000000 );
-        //engine.setWhiteTime( 300000 );
-        //engine.search( MAX_DEPTH_SEARCH );
+        Engine engine = null;
         
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -166,18 +137,18 @@ public class Daan{
             }
             
             if(command.startsWith("position")){
-                if(command.indexOf( "fen" ) > -1){
+                if(command.contains("fen")){
                     
                     String fen = command.substring( command.indexOf( "fen" ) + 4 );
                     engine = new Engine( fen );
                     
-                }else if(command.indexOf( "startpos" ) > -1){
+                }else if(command.contains("startpos")){
                     
                     engine = new Engine();
                     
                 }
                 
-                if( command.indexOf( "moves" ) > -1 ){
+                if(command.contains("moves")){
                     //engine = new Engine();
                     String moves = command.substring( command.indexOf( "moves" ) + 6 );
                     engine.makeMoves( moves.split(" ") );
@@ -186,12 +157,12 @@ public class Daan{
                 
             }
             
-            if(command.indexOf("go") > -1){
+            if(command.contains("go")){
                 
                 long wtime = 0;
                 long btime = 0;
                 
-                 if( command.indexOf( "movetime" ) > -1){
+                 if(command.contains("movetime")){
                     String time = command.substring( command.indexOf( "movetime" ) + "movetime".length()+1 );
                     long moveTime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
                     
@@ -199,7 +170,7 @@ public class Daan{
                     
                 }                
                 
-                if ( command.indexOf( "wtime" ) > -1 ) {
+                if (command.contains("wtime")) {
                     String time = command.substring( command.indexOf( "wtime" ) + "wtime".length() + 1 );
                     wtime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
                     
@@ -211,9 +182,9 @@ public class Daan{
                     
                 }
                 
-                if ( command.indexOf( "btime" ) > -1 ) {
+                if (command.contains("btime")) {
                     String time = command.substring( command.indexOf( "btime" ) + "btime".length() + 1 );
-                    if ( time.indexOf( " " ) > -1 ) {
+                    if (time.contains(" ")) {
                         btime = Long.parseLong( time.substring( 0, time.indexOf( " " ) ) );
                     } else {
                         btime = Long.parseLong( time );
@@ -227,7 +198,7 @@ public class Daan{
                                        
                 }
                 
-                engine.search( MAX_DEPTH_SEARCH );
+                engine.search();
                 
             }
         }
