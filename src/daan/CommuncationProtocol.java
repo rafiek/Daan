@@ -14,7 +14,7 @@ import static daan.utils.Constants.*;
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  */
-final class Daan{
+final class CommuncationProtocol {
     
     //7 bits -> K=64, Q=32, R=16, B=8, N=4, WP=2, BP=1
     static {
@@ -86,7 +86,7 @@ final class Daan{
         
     }
 
-    private Daan() {
+    private CommuncationProtocol() {
     }
 
     /**
@@ -107,11 +107,11 @@ final class Daan{
                 command = bufferedReader.readLine();
             }
             catch (IOException ex){
-                Logger.getLogger(Daan.class.getName()).log(Level.SEVERE, "unable to read from standard input", ex);
+                Logger.getLogger( CommuncationProtocol.class.getName()).log( Level.SEVERE, "unable to read from standard input", ex );
             }
             
             if (command.equals("uci")) {
-                System.out.println("id name Daan");
+                System.out.println("id name CommuncationProtocol");
                 System.out.println("id author Rafiek Mohamedjoesoef");
                 //no options so send "uciok"
                 System.out.println("uciok");
