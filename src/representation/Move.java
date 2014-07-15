@@ -1,13 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package representation;
 
-package daan.representation;
+import utils.Utils;
 
-import daan.utils.Utils;
-
-import static daan.utils.Constants.*;
+import static utils.Constants.*;
 
 /**
  *

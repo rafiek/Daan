@@ -1,12 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package ai;
 
-package daan.ai;
-
-import daan.representation.Board;
-import daan.representation.Move;
+import representation.Board;
+import representation.Move;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -17,7 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static daan.utils.Constants.*;
+import static utils.Constants.*;
 
 /**
  *
@@ -103,7 +98,7 @@ public class Engine{
             
         }
         
-        for( depth = 2; depth <= daan.utils.Constants.MAX_DEPTH_SEARCH; depth++){
+        for( depth = 2; depth <= utils.Constants.MAX_DEPTH_SEARCH; depth++){
             
             Collections.sort( rootMoves );
             

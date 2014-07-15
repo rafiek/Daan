@@ -1,14 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package benchmark;
 
-package daan.benchmark;
-
-import daan.ai.Engine;
-import daan.representation.Move;
-import daan.utils.Constants;
-import daan.utils.Utils;
+import ai.Engine;
+import representation.Move;
+import utils.Constants;
+import utils.Utils;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -18,7 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static daan.utils.Constants.ATTACK_TABLE;
+import static utils.Constants.ATTACK_TABLE;
 
 /**
  *

@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package daan.utils;
+package utils;
 
-import daan.representation.Move;
+import representation.Move;
 
 import java.util.Collections;
 import java.util.Comparator;

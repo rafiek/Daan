@@ -1,6 +1,6 @@
-package daan;
+package main;
 
-import daan.ai.Engine;
+import ai.Engine;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,13 +8,13 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static daan.utils.Constants.*;
+import static utils.Constants.*;
 
 /**
  *
  * @author Rafiek Mohamedjoesoef <Rafiek.Mohamedjoesoef@hva.nl>
  */
-final class Daan{
+public class Daan{
     
     //7 bits -> K=64, Q=32, R=16, B=8, N=4, WP=2, BP=1
     static {
@@ -86,8 +86,6 @@ final class Daan{
         
     }
 
-    private Daan() {
-    }
 
     /**
      * @param args the command line arguments
@@ -111,7 +109,7 @@ final class Daan{
             }
             
             if (command.equals("uci")) {
-                System.out.println("id name Daan");
+                System.out.println("id name main.Daan");
                 System.out.println("id author Rafiek Mohamedjoesoef");
                 //no options so send "uciok"
                 System.out.println("uciok");

@@ -1,4 +1,4 @@
-package daan.utils;
+package utils;
 
 import java.util.Map;
 

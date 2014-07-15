@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package daan.representation;
+package representation;
 
-import daan.utils.Utils;
+import utils.Utils;
 
 import java.util.*;
 
-import static daan.utils.Constants.*;
+import static utils.Constants.*;
 
 /**
  *
